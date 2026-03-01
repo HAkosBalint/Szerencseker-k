@@ -90,45 +90,91 @@
     <p id="result" style="font-size: 24px; font-weight: bold; margin-top: 20px;"></p>
 
     <script>
-        const prizes = ["🍄 5", "💰 1000", "💀", "🍄 10", "🛡️ Új Rang", "🍻", "💎", "⚔️"];
-        const colors = ["#8d6e63", "#5d4037", "#3e2723", "#8d6e63", "#5d4037", "#3e2723", "#8d6e63", "#5d4037"];
-        const canvas = document.getElementById("wheel");
-        const ctx = canvas.getContext("2d");
-        let currentRotation = 0;
+        const prizes = ["🍄 5 Gomba", "💰 1000 Arany", "💀 Balszerencse", "🍄 10 Gomba", "🛡️ Új Rang", "🍻 Egy sör", "💎 Drágakő", "⚔️ Fegyver"];
+// Jól látható, kontrasztos színek
+const colors = ["#8d6e63", "#5d4037", "#a1887f", "#4e342e", "#8d6e63", "#5d4037", "#a1887f", "#4e342e"];
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
+let currentRotation = 0;
 
-
-      function drawWheel() {
+function drawWheel() {
     const arc = (2 * Math.PI) / prizes.length;
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Tisztítás, hogy ne ragadjon be semmi
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Tisztítás
 
     for (let i = 0; i < prizes.length; i++) {
-        // SZELETEK SZÍNEZÉSE (Váltakozó barna árnyalatok)
-        ctx.fillStyle = (i % 2 === 0) ? "#5d4037" : "#3e2723"; 
+        // SZELET RAJZOLÁSA
         ctx.beginPath();
+        ctx.fillStyle = colors[i];
         ctx.moveTo(225, 225);
         ctx.arc(225, 225, 225, i * arc, (i + 1) * arc);
         ctx.fill();
         
-        // SZELETEK KÖZÖTTI VONALAK (Arany szín)
+        // SZELET SZÉLE (Arany kontúr)
         ctx.strokeStyle = "#d4af37";
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // SZÖVEGEK RAJZOLÁSA
+        // SZÖVEG RAJZOLÁSA
         ctx.save();
-        ctx.fillStyle = "#f2e3c9"; // Világos pergamen szín a szövegnek
-        ctx.font = "bold 14px Segoe UI";
+        ctx.fillStyle = "white";
+        ctx.font = "bold 15px Segoe UI"; // Fix betűméret
+        ctx.shadowBlur = 4;
+        ctx.shadowColor = "black";
         ctx.textAlign = "right";
         ctx.textBaseline = "middle";
 
-        // Mozgatás a szelet közepére
         ctx.translate(225, 225);
         ctx.rotate(i * arc + arc / 2);
         
-        // A szöveget beljebb toljuk, hogy elférjen (180 pixelre a középponttól)
-        ctx.fillText(prizes[i], 210, 0); 
+        // A szöveget beljebb húzzuk (210 pixelre a szélétől)
+        ctx.fillText(prizes[i], 215, 0); 
         ctx.restore();
     }
+}
+
+// Azonnali rajzolás, amint betölt az oldal
+window.onload = function() {
+    drawWheel();
+};
+
+function spinWheel() {
+    const user = document.getElementById("username").value;
+    if (!user) return alert("Add meg a neved, vitéz!");
+
+    if (localStorage.getItem("lastSpin") === new Date().toDateString()) {
+        return alert("Ma már pörgettél! Gyere vissza holnap.");
+    }
+
+    const spinBtn = document.getElementById("spinBtn");
+    spinBtn.disabled = true;
+    
+    const spinDeg = Math.floor(Math.random() * 360) + 3600; 
+    currentRotation += spinDeg;
+    canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+    setTimeout(() => {
+        const actualDeg = currentRotation % 360;
+        // Kiszámoljuk a nyereményt a jobb oldali mutatóhoz (270 fokos korrekció)
+        const prizeIndex = Math.floor(((360 - (actualDeg % 360)) / (360 / prizes.length))) % prizes.length;
+        const winnerPrize = prizes[prizeIndex];
+        
+        document.getElementById("result").innerText = "Nyereményed: " + winnerPrize;
+        localStorage.setItem("lastSpin", new Date().toDateString());
+        
+        sendToDiscord(user, winnerPrize);
+        spinBtn.disabled = false; // Újraaktiváljuk a gombot a következő napra
+    }, 5000);
+}
+
+function sendToDiscord(user, prize) {
+    const webhookURL = "https://discord.com/api/webhooks/1477699408836558911/bbEnuI5QRGdLz8InshqUvWHfRYN3HL7WkY6m1yfGKOUhOQB2iT1eTMGj7wjO60q-_bSR";
+    fetch(webhookURL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            content: `🎰 **${user}** pörgetett és nyert: **${prize}**!`
+        })
+    });
 }
 
 // EZT NE FELEJTSD EL: A kód végén a drawWheel() hívás után 
