@@ -12,6 +12,7 @@
             margin: 0; padding: 20px; overflow-x: hidden;
         }
 
+        /* --- CÉH LOGÓ --- */
         .guild-logo {
             position: absolute; top: 10px; right: 10px;
             width: 150px; height: auto; z-index: 100;
@@ -20,15 +21,25 @@
 
         .container { margin-top: 50px; position: relative; display: inline-block; }
 
+        /* --- KERÉK STÍLUS ÉS ANIMÁCIÓK --- */
         canvas { 
             border: 12px solid #5d4037; border-radius: 50%; 
             box-shadow: 0 0 25px rgba(0,0,0,0.7); background: #3e2723; 
+            display: block; margin: 0 auto;
+            /* Alapjárati lassú forgás */
             animation: slow-spin 30s linear infinite;
         }
 
-        @keyframes slow-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        /* Pörgetés osztály - felülírja az alap animációt */
+        .spinning {
+            animation: none !important;
+            transition: transform 5s cubic-bezier(0.1, 0, 0.2, 1) !important;
+        }
 
-        .spinning { animation: none !important; transition: transform 5s cubic-bezier(0.1, 0, 0.2, 1); }
+        @keyframes slow-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
 
         .pointer {
             position: absolute; top: 50%; right: -30px; transform: translateY(-50%);
@@ -49,11 +60,11 @@
             background: #3e2723; color: #f2e3c9; margin-bottom: 15px; width: 250px; font-size: 16px;
         }
 
+        /* --- MODAL --- */
         #prizeModal {
             display: none; position: fixed; z-index: 200; left: 0; top: 0; 
             width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
         }
-
         .modal-content {
             background: #3e2723; color: #f2e3c9; margin: 10% auto; padding: 40px; 
             border: 4px solid #d4af37; width: 320px; border-radius: 20px; 
@@ -123,7 +134,7 @@
                 ctx.restore();
             }
 
-            // Középrész
+            // Középrész rajzolása
             ctx.beginPath();
             ctx.arc(225, 225, 40, 0, 2 * Math.PI);
             ctx.fillStyle = "#5d4037";
@@ -133,13 +144,11 @@
             ctx.stroke();
         }
 
-        // Hang lejátszása
         function playClick() {
             clickSound.currentTime = 0;
             clickSound.play().catch(() => {});
         }
 
-        // Folyamatos ellenőrzés a pörgetés alatt
         function checkRotation() {
             const style = window.getComputedStyle(canvas);
             const matrix = new WebKitCSSMatrix(style.transform);
@@ -174,9 +183,16 @@
             const currentAngle = Math.round(Math.atan2(matrix.b, matrix.a) * (180 / Math.PI));
             
             spinBtn.disabled = true;
-            canvas.classList.add("spinning");
+
+            // BUG FIX: Először megállítjuk a lassú forgást a jelenlegi foknál
+            canvas.classList.remove("spinning"); 
+            canvas.style.transform = `rotate(${currentAngle}deg)`;
             
-            // Hangfigyelés indítása
+            // Force Reflow: kényszerítjük a böngészőt a váltás észlelésére
+            void canvas.offsetWidth;
+
+            // Indítjuk a nagy pörgetést
+            canvas.classList.add("spinning");
             requestAnimationFrame(checkRotation);
             
             const spinDeg = Math.floor(Math.random() * 360) + 3600; 
@@ -184,9 +200,12 @@
             canvas.style.transform = `rotate(${currentRotation}deg)`;
 
             setTimeout(() => {
-                canvas.classList.remove("spinning");
-                const actualDeg = currentRotation % 360;
-                const prizeIndex = Math.floor(((360 - (actualDeg % 360)) / (360 / prizes.length))) % prizes.length;
+                const finalStyle = window.getComputedStyle(canvas);
+                const finalMatrix = new WebKitCSSMatrix(finalStyle.transform);
+                const finalAngle = Math.atan2(finalMatrix.b, finalMatrix.a) * (180 / Math.PI);
+                const adjustedFinalAngle = (finalAngle < 0 ? finalAngle + 360 : finalAngle);
+                
+                const prizeIndex = Math.floor(((360 - adjustedFinalAngle) / (360 / prizes.length))) % prizes.length;
                 const winnerPrize = prizes[prizeIndex];
                 
                 document.getElementById("modalPrizeText").innerText = winnerPrize;
