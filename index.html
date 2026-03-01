@@ -229,22 +229,24 @@
             });
         }
         function sendToGoogleSheet(user, prize) {
-            // CSERÉLD KI: A te Formod linkje (a /viewform helyett /formResponse kell a végére!)
-            const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/viewform";
+            // 1. JAVÍTÁS: A link vége formResponse legyen!
+            const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/formResponse";
             
             const formData = new FormData();
-            // CSERÉLD KI: Az entry számokat a sajátjaidra!
-            formData.append("entry.0", user); // Név mező ID
-            formData.append("entry.2", prize); // Nyeremény mező ID
+            
+            // 2. JAVÍTÁS: Itt a 0 és 2 helyére a saját entry számaidat írd be!
+            // Ezeket a Form forráskódjában találod (Ctrl+F-el keress rá: "entry.")
+            formData.append("entry.entry.1741512423", user); 
+            formData.append("entry.entry.1738720831", prize); 
         
             fetch(formURL, {
                 method: "POST",
-                mode: "no-cors", // Ez fontos, hogy ne kapj hibaüzenetet
+                mode: "no-cors", 
                 body: formData
             }).then(() => {
-                console.log("Táblázatba mentve!");
+                console.log("Sikeresen elküldve a Google-nek!");
             }).catch((error) => {
-                console.error("Táblázat hiba:", error);
+                console.error("Hiba:", error);
             });
         }
 
