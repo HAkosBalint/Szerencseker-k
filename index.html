@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>Abul-Akbar Szerencsekereke</title>
+    <style>
+        body { background: #1a0f0a; color: #e0c9a6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; }
+        .container { margin-top: 50px; }
+        canvas { border: 10px solid #5d4037; border-radius: 50%; box-shadow: 0 0 20px rgba(0,0,0,0.5); background: #3e2723; }
+        button { background: #d4af37; border: none; padding: 15px 30px; font-size: 20px; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: 20px; transition: 0.3s; }
+        button:hover { background: #f1c40f; transform: scale(1.05); }
+        button:disabled { background: #777; cursor: not-allowed; }
+        input { padding: 10px; border-radius: 5px; border: none; margin-bottom: 10px; width: 200px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎡 Abul-Akbar Szerencsekereke</h1>
+    <input type="text" id="username" placeholder="Discord neved..."><br>
+    <canvas id="wheel" width="400" height="400"></canvas><br>
+    <button id="spinBtn" onclick="spinWheel()">PÖRGETÉS!</button>
+    <p id="result"></p>
+</div>
+
+<script>
+    const prizes = ["🍄 5 Gomba", "💰 1000 Arany", "💀 Balszerencse", "🍄 10 Gomba", "🛡️ Új Rang", "🍻 Egy sör"];
+    const colors = ["#8d6e63", "#5d4037", "#3e2723", "#8d6e63", "#5d4037", "#3e2723"];
+    const canvas = document.getElementById("wheel");
+    const ctx = canvas.getContext("2d");
+    let currentRotation = 0;
+
+    // Kerék kirajzolása
+    function drawWheel() {
+        const arc = (2 * Math.PI) / prizes.length;
+        for (let i = 0; i < prizes.length; i++) {
+            ctx.fillStyle = colors[i];
+            ctx.beginPath();
+            ctx.moveTo(200, 200);
+            ctx.arc(200, 200, 200, i * arc, (i + 1) * arc);
+            ctx.fill();
+            ctx.save();
+            ctx.fillStyle = "white";
+            ctx.translate(200 + Math.cos(i * arc + arc / 2) * 140, 200 + Math.sin(i * arc + arc / 2) * 140);
+            ctx.rotate(i * arc + arc / 2);
+            ctx.fillText(prizes[i].split(" ")[1], 0, 0);
+            ctx.restore();
+        }
+    }
+    drawWheel();
+
+    function spinWheel() {
+        const user = document.getElementById("username").value;
+        if (!user) return alert("Add meg a neved, vitéz!");
+
+        // Egyszerű napi limit (böngésző alapú)
+        if (localStorage.getItem("lastSpin") === new Date().toDateString()) {
+            return alert("Ma már pörgettél! Gyere vissza holnap.");
+        }
+
+        document.getElementById("spinBtn").disabled = true;
+        const spinDeg = Math.floor(Math.random() * 360) + 3600; 
+        currentRotation += spinDeg;
+        canvas.style.transition = "transform 4s cubic-bezier(0.1, 0, 0.2, 1)";
+        canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+        setTimeout(() => {
+            const actualDeg = currentRotation % 360;
+            const prizeIndex = Math.floor((360 - (actualDeg % 360)) / (360 / prizes.length)) % prizes.length;
+            const winnerPrize = prizes[prizeIndex];
+            
+            document.getElementById("result").innerText = "Nyereményed: " + winnerPrize;
+            localStorage.setItem("lastSpin", new Date().toDateString());
+            
+            // ADATKÜLDÉS DISCORDRA
+            sendToDiscord(user, winnerPrize);
+        }, 4000);
+    }
+
+    function sendToDiscord(user, prize) {
+        const webhookURL = "IDE_MÁSOLD_BE_A_DISCORD_WEBHOOKODAT";
+        fetch(webhookURL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                content: `🎰 **${user}** pörgetett és nyert: **${prize}**!`
+            })
+        });
+    }
+</script>
+</body>
+</html>
