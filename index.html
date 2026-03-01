@@ -14,7 +14,7 @@
             overflow-x: hidden;
         }
 
-        /* --- CÉH LOGÓ STÍLUS --- */
+        /* --- CÉH LOGÓ STÍLUS (A beküldött fájlnévvel) --- */
         .guild-logo {
             position: absolute;
             top: 10px;
@@ -141,7 +141,7 @@
 </head>
 <body>
 
-    <img src="logo.png" class="guild-logo" alt="BeGombázók Logó">
+    <img src="Screenshot_20260227_124403.jpg" class="guild-logo" alt="BeGombázók Logó">
 
     <div id="prizeModal">
         <div class="modal-content">
@@ -175,6 +175,7 @@
             const arc = (2 * Math.PI) / prizes.length;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            // Körcikkek és nyeremények rajzolása
             for (let i = 0; i < prizes.length; i++) {
                 ctx.beginPath();
                 ctx.fillStyle = colors[i];
@@ -199,6 +200,21 @@
                 ctx.fillText(prizes[i], 215, 0); 
                 ctx.restore();
             }
+
+            // --- ÚJ RÉSZ: FIX KÖZÉPRÉSZ ---
+            ctx.beginPath();
+            ctx.arc(225, 225, 40, 0, 2 * Math.PI); // A belső kör mérete (40px)
+            ctx.fillStyle = "#5d4037";           // Sötétbarna szín (mint a keret)
+            ctx.fill();
+            ctx.strokeStyle = "#d4af37";         // Arany szegély a közepének
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            
+            // Egy pici extra díszítés a legközepére
+            ctx.beginPath();
+            ctx.arc(225, 225, 10, 0, 2 * Math.PI);
+            ctx.fillStyle = "#d4af37";
+            ctx.fill();
         }
 
         function spinWheel() {
@@ -214,12 +230,14 @@
             const spinBtn = document.getElementById("spinBtn");
             const wheelCanvas = document.getElementById("wheel");
             
-            // Kiszámoljuk a pillanatnyi szöget az animációból
+            // Kiszámoljuk az aktuális szöget a lassú forgás közben
             const style = window.getComputedStyle(wheelCanvas);
             const matrix = new WebKitCSSMatrix(style.transform);
             const currentAngle = Math.round(Math.atan2(matrix.b, matrix.a) * (180 / Math.PI));
             
             spinBtn.disabled = true;
+            
+            // Átváltás pörgető üzemmódra (leáll a lassú animáció)
             wheelCanvas.classList.add("spinning");
             
             const spinDeg = Math.floor(Math.random() * 360) + 3600; 
