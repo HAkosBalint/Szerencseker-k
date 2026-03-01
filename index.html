@@ -34,6 +34,15 @@
             margin-top: 50px;
         }
 
+        /* Logó stílusa */
+        .logo-image {
+            width: 150px;
+            height: auto;
+            display: block;
+            margin: 0 auto 20px;
+            box-shadow: none; /* Ne legyen árnyéka a logónak */
+        }
+
         /* Arany keret dekoráció */
         .main-container::before {
             content: '';
@@ -149,6 +158,8 @@
 <body>
 
     <div class="main-container">
+        <img src="logo.png" alt="Logó" class="logo-image">
+        
         <h2>Szerencsekerék</h2>
         <input type="text" id="username" placeholder="Hős neve..." autocomplete="off"><br>
         
