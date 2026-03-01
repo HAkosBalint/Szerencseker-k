@@ -12,7 +12,6 @@
             margin: 0; padding: 20px; overflow-x: hidden;
         }
 
-        /* --- CÉH LOGÓ --- */
         .guild-logo {
             position: absolute; top: 10px; right: 10px;
             width: 150px; height: auto; z-index: 100;
@@ -21,24 +20,23 @@
 
         .container { margin-top: 50px; position: relative; display: inline-block; }
 
-        /* --- KERÉK STÍLUS ÉS ANIMÁCIÓK --- */
         canvas { 
             border: 12px solid #5d4037; border-radius: 50%; 
             box-shadow: 0 0 25px rgba(0,0,0,0.7); background: #3e2723; 
             display: block; margin: 0 auto;
-            /* Alapjárati lassú forgás */
+            /* Alap lassú forgás */
             animation: slow-spin 30s linear infinite;
+        }
+
+        @keyframes slow-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         /* Pörgetés osztály - felülírja az alap animációt */
         .spinning {
             animation: none !important;
             transition: transform 5s cubic-bezier(0.1, 0, 0.2, 1) !important;
-        }
-
-        @keyframes slow-spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
         }
 
         .pointer {
@@ -60,7 +58,6 @@
             background: #3e2723; color: #f2e3c9; margin-bottom: 15px; width: 250px; font-size: 16px;
         }
 
-        /* --- MODAL --- */
         #prizeModal {
             display: none; position: fixed; z-index: 200; left: 0; top: 0; 
             width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
@@ -145,9 +142,19 @@
         }
 
         function playClick() {
+            // Megállítjuk az aktuális hangot és visszatekerjük az elejére
+            clickSound.pause();
             clickSound.currentTime = 0;
-            clickSound.play().catch(() => {});
-        }
+            
+            // Megpróbáljuk lejátszani
+            let playPromise = clickSound.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("A böngésző blokkolta a hangot, amíg nincs interakció.");
+                        });
+                    }
+                }
 
         function checkRotation() {
             const style = window.getComputedStyle(canvas);
@@ -167,7 +174,7 @@
             }
         }
 
-function spinWheel() {
+        function spinWheel() {
             const user = document.getElementById("username").value.trim();
             if (!user) return alert("Add meg a neved, vitéz!");
 
@@ -178,38 +185,33 @@ function spinWheel() {
             }
 
             const spinBtn = document.getElementById("spinBtn");
-            const wheelCanvas = document.getElementById("wheel");
-            
-            // 1. Megállapítjuk hol áll most pontosan
-            const style = window.getComputedStyle(wheelCanvas);
+            const style = window.getComputedStyle(canvas);
             const matrix = new WebKitCSSMatrix(style.transform);
             const currentAngle = Math.round(Math.atan2(matrix.b, matrix.a) * (180 / Math.PI));
             
             spinBtn.disabled = true;
 
-            // 2. Fixáljuk a jelenlegi helyzetében és LEVESSZÜK az alap animációt
-            wheelCanvas.style.animation = "none";
-            wheelCanvas.style.transform = `rotate(${currentAngle}deg)`;
+            // Alap animáció megállítása
+            canvas.style.animation = "none";
+            canvas.style.transform = `rotate(${currentAngle}deg)`;
             
-            // 3. Egy pici szünetet hagyunk (10ms), hogy a böngésző észlelje a váltást
+            void canvas.offsetWidth; // Force Reflow
+
             setTimeout(() => {
-                wheelCanvas.classList.add("spinning");
-                
-                // Hangfigyelés indítása
+                canvas.classList.add("spinning");
                 requestAnimationFrame(checkRotation);
                 
-                // Véletlenszerű pörgés kiszámítása (legalább 10 kör + véletlen)
                 const spinDeg = Math.floor(Math.random() * 360) + 3600; 
                 currentRotation = currentAngle + spinDeg;
-                
-                // Elindítjuk a mozgást
-                wheelCanvas.style.transform = `rotate(${currentRotation}deg)`;
+                canvas.style.transform = `rotate(${currentRotation}deg)`;
 
-                // 4. Megvárjuk a pörgés végét (5 másodperc)
                 setTimeout(() => {
-                    // Itt NEM vesszük le a .spinning-et azonnal, hogy ne ugorjon vissza
-                    const actualDeg = currentRotation % 360;
-                    const prizeIndex = Math.floor(((360 - (actualDeg % 360)) / (360 / prizes.length))) % prizes.length;
+                    const finalStyle = window.getComputedStyle(canvas);
+                    const finalMatrix = new WebKitCSSMatrix(finalStyle.transform);
+                    const finalAngle = Math.atan2(finalMatrix.b, finalMatrix.a) * (180 / Math.PI);
+                    const adjustedFinalAngle = (finalAngle < 0 ? finalAngle + 360 : finalAngle);
+                    
+                    const prizeIndex = Math.floor(((360 - adjustedFinalAngle) / (360 / prizes.length))) % prizes.length;
                     const winnerPrize = prizes[prizeIndex];
                     
                     document.getElementById("modalPrizeText").innerText = winnerPrize;
@@ -223,10 +225,22 @@ function spinWheel() {
                     sendToGoogleSheet(user, winnerPrize);
                     spinBtn.disabled = false;
                 }, 5000);
-            }, 10); // Ez a 10ms-os késleltetés oldja meg a "lefagyást"
+            }, 10);
         }
 
-        function closeModal() { document.getElementById("prizeModal").style.display = "none"; }
+        // --- ÚJRAINDÍTÁS JAVÍTÁSA ---
+        function closeModal() {
+            document.getElementById("prizeModal").style.display = "none";
+            
+            // Levesszük a transitiont (spinning class)
+            canvas.classList.remove("spinning");
+            
+            // Visszaadjuk az alap CSS animációt
+            canvas.style.animation = "slow-spin 30s linear infinite";
+            
+            // Töröljük a fix transformot, hogy ne zavarjon be az animációnak
+            canvas.style.transform = ""; 
+        }
 
         function sendToDiscord(user, prize) {
             const webhookURL = "https://discord.com/api/webhooks/1477720960827130159/k3Pi8AiXOpDuUAJi4FJhNr6KtBANTbDV9-nzarCXVYB9dnGwtxu9E9zy15uJNgzcPdJP"; 
