@@ -12,26 +12,32 @@
         /* Sima szélű pergamen */
         .main-container {
             background: #dcc296;
-            background-image: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2) 0%, rgba(0,0,0,0) 100%);
             display: inline-block;
-            padding: 60px 80px;
+            padding: 50px 70px;
             position: relative;
             min-width: 500px;
             color: #3e2723;
-            border-radius: 15px; /* Sima kerekített sarok a szakadozott helyett */
+            border-radius: 10px;
             box-shadow: 0 0 40px rgba(0,0,0,0.8);
-            border: 2px solid #5d4037;
+            border: 1px solid #5d4037;
         }
 
         .container { position: relative; display: inline-block; margin: 20px 0; }
         
+        /* Kerék stílus */
         canvas { 
             border: 12px solid #3e2723; border-radius: 50%; background: #4e342e;
+            /* Folyamatos lassú forgás alaphelyzetben */
             animation: slow-spin 40s linear infinite;
         }
 
         @keyframes slow-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .spinning-active { animation: none !important; transition: transform 5s cubic-bezier(0.1, 0, 0.15, 1) !important; }
+
+        /* Erőteljes pörgetés animáció */
+        .spinning-active { 
+            animation: none !important; 
+            transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1) !important; 
+        }
 
         .pointer {
             position: absolute; top: 50%; right: -30px; transform: translateY(-50%);
@@ -44,20 +50,22 @@
             color: #f2e3c9; padding: 12px 40px; font-size: 22px; font-weight: bold; cursor: pointer; 
             border-radius: 5px; text-shadow: 2px 2px 2px #000; margin-top: 15px;
         }
+        button:hover { brightness(1.2); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
 
         input { 
-            background: rgba(255, 255, 255, 0.6); border: 2px solid #5d4037; 
+            background: rgba(255, 255, 255, 0.7); border: 2px solid #5d4037; 
             padding: 10px; font-size: 18px; width: 280px; margin-bottom: 10px; text-align: center;
         }
         
-        #prizeModal { display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
+        #prizeModal { display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); }
         .modal-content { background: #dcc296; margin: 15% auto; padding: 40px; border: 8px solid #5d4037; width: 300px; text-align: center; border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <div class="main-container">
-        <h1 style="margin: 0;">Szerencsekerék</h1>
+        <h1 style="margin: 0; font-variant: small-caps;">Szerencsekerék</h1>
         <p>Írd be a Discord neved!</p>
         <input type="text" id="username" placeholder="Discord név..." autocomplete="off"><br>
         
@@ -69,9 +77,11 @@
         <button id="spinBtn" onclick="spinWheel()">Pörgetés!</button>
     </div>
 
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
     <div id="prizeModal">
         <div class="modal-content">
-            <h2>Gratulálunk!</h2>
+            <h2 style="color:#5d4037">Gratulálunk!</h2>
             <p id="modalPrizeText" style="font-size: 28px; font-weight: bold; color: #8b0000;"></p>
             <button onclick="closeModal()">RENDBEN</button>
         </div>
@@ -105,41 +115,59 @@
         function spinWheel() {
             const user = document.getElementById("username").value.trim();
             if (!user) return alert("Kérlek, add meg a Discord neved!");
-            document.getElementById("spinBtn").disabled = true;
+            
+            const btn = document.getElementById("spinBtn");
+            btn.disabled = true;
+
+            // Kiszámítjuk az aktuális szöget, hogy onnan folytassa
+            const style = window.getComputedStyle(canvas);
+            const matrix = new WebKitCSSMatrix(style.transform);
+            const currentAngle = Math.round(Math.atan2(matrix.b, matrix.a) * (180/Math.PI));
             
             canvas.classList.add("spinning-active");
-            const rotation = Math.floor(Math.random() * 360) + 3600;
-            canvas.style.transform = `rotate(${rotation}deg)`;
+            
+            // Random pörgetés (legalább 10 fordulat)
+            const extraRotation = Math.floor(Math.random() * 360) + 3600;
+            const totalRotation = extraRotation + (currentAngle < 0 ? currentAngle + 360 : currentAngle);
+            
+            canvas.style.transform = `rotate(${totalRotation}deg)`;
 
+            // Várjuk meg az animáció végét (5mp)
             setTimeout(() => {
-                const actualDeg = rotation % 360;
+                const actualDeg = totalRotation % 360;
                 const idx = Math.floor(((360 - actualDeg) / (360 / prizes.length))) % prizes.length;
                 const win = prizes[idx];
                 
                 document.getElementById("modalPrizeText").innerText = win;
                 document.getElementById("prizeModal").style.display = "block";
                 
+                // Csak most küldjük el az adatot!
                 sendToGoogleSheet(user, win);
             }, 5000);
         }
 
         function sendToGoogleSheet(user, prize) {
             const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/formResponse";
-            const formData = new FormData();
             
-            // Itt a te mezőazonosítóidat használjuk
-            const params = new URLSearchParams();
-            params.append("entry.1569039722", user);
-            params.append("entry.916111113", prize);
-
-            fetch(formURL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: params.toString()
-            }).then(() => {
-                console.log("Adat elküldve: " + user + " - " + prize);
-            });
+            const form = document.createElement("form");
+            form.target = "hidden_iframe"; 
+            form.method = "POST"; 
+            form.action = formURL;
+            
+            // Mező azonosítók
+            const n = document.createElement("input"); 
+            n.type="hidden"; n.name = "entry.1569039722"; n.value = user; 
+            form.appendChild(n);
+            
+            const p = document.createElement("input"); 
+            p.type="hidden"; p.name = "entry.916111113"; p.value = prize; 
+            form.appendChild(p);
+            
+            document.body.appendChild(form);
+            form.submit();
+            
+            // Takarítás
+            setTimeout(() => { document.body.removeChild(form); }, 1000);
         }
 
         function closeModal() {
