@@ -8,6 +8,7 @@
             background: #1a0f0a url('https://www.transparenttextures.com/patterns/dark-wood.png'); 
             color: #f2e3c9; font-family: 'Times New Roman', serif; text-align: center; margin: 0; padding: 20px;
         }
+        /* Pergamen stílusú tábla */
         .main-container {
             background: #dcc296 url('https://www.transparenttextures.com/patterns/beige-paper.png');
             border: 8px solid #3e2723; border-radius: 10px; display: inline-block; padding: 30px;
@@ -30,7 +31,7 @@
             color: #f2e3c9; padding: 15px 45px; font-size: 24px; font-weight: bold; cursor: pointer; 
             border-radius: 5px; text-shadow: 2px 2px 2px #000; box-shadow: 0 5px 0 #2e1a12;
         }
-        input { background: #fdf5e6; border: 2px solid #5d4037; padding: 12px; font-size: 18px; width: 300px; }
+        input { background: #fdf5e6; border: 2px solid #5d4037; padding: 12px; font-size: 18px; width: 300px; margin-bottom: 10px; }
         #prizeModal { display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
         .modal-content { background: #dcc296; margin: 15% auto; padding: 40px; border: 8px solid #5d4037; width: 320px; text-align: center; }
     </style>
@@ -56,6 +57,11 @@
     </div>
 
     <script>
+        // Azonnali fix az ID-kra a képek alapján
+        const NAME_ID = "1569039722";
+        const PRIZE_ID = "916111113";
+        const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/formResponse";
+
         const prizes = ["5 Gomba", "1000 Arany", "Balszerencse", "10 Gomba", "Uj Rang", "Egy sor", "Dragako", "Fegyver"];
         const colors = ["#5d4037", "#8b5a2b", "#3e2723", "#d4af37", "#5d4037", "#8b0000", "#3e2723", "#a67b5b"];
         const canvas = document.getElementById("wheel");
@@ -72,6 +78,7 @@
             osc.start(); osc.stop(audioCtx.currentTime + 0.1);
         }
 
+        // Törött deszkás rajzolás
         function drawWheel() {
             const arc = (2 * Math.PI) / prizes.length;
             for (let i = 0; i < prizes.length; i++) {
@@ -117,16 +124,16 @@
             }, 5000);
         }
 
+        // Biztonsági beküldés (tisztított szöveggel)
         function sendToGoogleSheet(user, prize) {
-            const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/formResponse";
             const iframe = document.createElement("iframe");
             iframe.name = "hidden_frame"; iframe.style.display = "none";
             document.body.appendChild(iframe);
             const form = document.createElement("form");
-            form.target = "hidden_frame"; form.method = "POST"; form.action = formURL;
+            form.target = "hidden_frame"; form.method = "POST"; form.action = FORM_URL;
             
-            const n = document.createElement("input"); n.name = "entry.1569039722"; n.value = user; form.appendChild(n);
-            const p = document.createElement("input"); p.name = "entry.916111113"; p.value = prize; form.appendChild(p);
+            const n = document.createElement("input"); n.type="hidden"; n.name = `entry.${NAME_ID}`; n.value = user; form.appendChild(n);
+            const p = document.createElement("input"); p.type="hidden"; p.name = `entry.${PRIZE_ID}`; p.value = prize; form.appendChild(p);
             
             document.body.appendChild(form);
             form.submit();
