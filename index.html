@@ -129,6 +129,13 @@
         function spinWheel() {
             const user = document.getElementById("username").value;
             if (!user) return alert("Add meg a neved, vitéz!");
+            // Ha a név 'teszt', akkor nem nézi a napi korlátot
+            if (user.toLowerCase() !== "teszt") {
+                if (localStorage.getItem("lastSpin") === new Date().toDateString()) {
+                    return alert("Ma már pörgettél! Gyere vissza holnap.");
+                }
+            }
+            // ------------------------
 
             if (localStorage.getItem("lastSpin") === new Date().toDateString()) {
                 return alert("Ma már pörgettél! Gyere vissza holnap.");
