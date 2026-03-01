@@ -2,23 +2,19 @@
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
-    <title>Szerencsekerék</title>
+    <title>Szerencsekerék - Discord</title>
     <style>
         body { background: #1a0f0a; color: #f2e3c9; font-family: 'Times New Roman', serif; text-align: center; padding: 20px; }
         .main-container { background: #dcc296; display: inline-block; padding: 30px; border-radius: 15px; border: 2px solid #5d4037; box-shadow: 0 0 40px #000; }
         .container { position: relative; display: inline-block; margin: 20px 0; }
         
-        /* A kerék alaphelyzetben lassú forgással */
-        #wheel { 
-            border: 10px solid #3e2723; border-radius: 50%; background: #4e342e;
-            display: block;
-        }
+        #wheel { border: 10px solid #3e2723; border-radius: 50%; background: #4e342e; display: block; }
 
-        /* Alap lassú forgás CSS-szel */
+        /* Alap lassú forgás */
         .idle-spin { animation: slow-spin 30s linear infinite; }
         @keyframes slow-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* A pörgetés átmenete */
+        /* Pörgetés átmenete */
         .spinning { transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1); }
 
         .pointer { 
@@ -27,13 +23,14 @@
             border-right: 45px solid #d4af37; z-index: 10; 
         }
 
-        input { padding: 12px; width: 220px; text-align: center; font-size: 16px; border-radius: 8px; border: 2px solid #5d4037; }
+        input { padding: 12px; width: 220px; text-align: center; font-size: 16px; border-radius: 8px; border: 2px solid #5d4037; background: #fdf5e6; }
         button { background: linear-gradient(to bottom, #8b5a2b, #4e342e); border: 2px solid #d4af37; color: #f2e3c9; 
                  padding: 12px 30px; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 8px; margin-top: 15px; }
         button:disabled { opacity: 0.5; }
 
+        /* Egyedi Modal */
         #customModal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); }
-        .modal-content { background: #dcc296; margin: 15% auto; padding: 25px; border: 4px solid #5d4037; width: 280px; border-radius: 15px; color: #3e2723; }
+        .modal-content { background: #dcc296; margin: 15% auto; padding: 25px; border: 4px solid #5d4037; width: 280px; border-radius: 15px; color: #3e2723; box-shadow: 0 0 20px #000; }
     </style>
 </head>
 <body>
@@ -52,9 +49,10 @@
 
     <div id="customModal">
         <div class="modal-content">
-            <h3>Gratulálunk!</h3>
-            <p id="prizeText" style="font-size: 22px; font-weight: bold; color: #8b0000;"></p>
-            <button onclick="location.reload()">RENDBEN</button>
+            <h3 style="margin-top:0;">Gratulálunk!</h3>
+            <p>A mai jutalmad:</p>
+            <p id="prizeText" style="font-size: 24px; font-weight: bold; color: #8b0000; margin: 10px 0;"></p>
+            <button onclick="location.reload()" style="padding:10px 20px; cursor:pointer; font-weight:bold;">RENDBEN</button>
         </div>
     </div>
 
@@ -63,6 +61,8 @@
     <script>
         const prizes = ["5 Gomba", "1000 Arany", "Balszerencse", "10 Gomba", "Új Rang", "Egy sör", "Drágakő", "Fegyver"];
         const colors = ["#5d4037", "#8b5a2b", "#3e2723", "#d4af37", "#5d4037", "#8b0000", "#3e2723", "#a67b5b"];
+        const webhookURL = "https://discord.com/api/webhooks/1477720960827130159/k3Pi8AiXOpDuUAJi4FJhNr6KtBANTbDV9-nzarCXVYB9dnGwtxu9E9zy15uJNgzcPdJP";
+        
         const canvas = document.getElementById("wheel");
         const ctx = canvas.getContext("2d");
 
@@ -85,45 +85,72 @@
             const btn = document.getElementById("spinBtn");
             btn.disabled = true;
 
-            // 1. Kiszámoljuk hol áll éppen a kerék az animáció alatt
+            // 1. Megállítjuk a lassú forgást és rögzítjük a szöget
             const style = window.getComputedStyle(canvas);
             const matrix = new WebKitCSSMatrix(style.transform);
             const currentRotation = Math.round(Math.atan2(matrix.b, matrix.a) * (180/Math.PI));
             
-            // 2. Leállítjuk a CSS animációt és rögzítjük a jelenlegi szöget
             canvas.classList.remove("idle-spin");
             canvas.style.transform = `rotate(${currentRotation}deg)`;
 
-            // 3. Kényszerítjük a böngészőt a frissítésre, majd indítjuk a pörgetést
+            // 2. Rövid szünet után nagy pörgetés indítása
             setTimeout(() => {
                 canvas.classList.add("spinning");
                 const extraSpin = 3600 + Math.floor(Math.random() * 360);
                 const finalRotation = currentRotation + extraSpin;
                 canvas.style.transform = `rotate(${finalRotation}deg)`;
 
+                // 3. Megvárjuk az 5 másodperces pörgést + egy kis hatásszünetet
                 setTimeout(() => {
-                    // 4. Pontos számítás: (A pointer 0 foknál van, a kerék jobbra forog)
                     const actualStopAngle = finalRotation % 360;
                     const normalizedAngle = (360 - (actualStopAngle < 0 ? actualStopAngle + 360 : actualStopAngle)) % 360;
                     const idx = Math.floor(normalizedAngle / (360 / prizes.length));
                     const win = prizes[idx];
                     
-                    document.getElementById("prizeText").innerText = win;
-                    document.getElementById("customModal").style.display = "block";
+                    // Adatküldés a Google Táblázatba (Név + Nyeremény összefűzve)
+                    sendToGoogle(user + " - " + win);
                     
-                    // Küldés összefűzve az entry.1569039722 mezőbe
-                    sendToForm(user + " - " + win);
+                    // Discord Webhook küldés
+                    sendToDiscord(user, win);
+
+                    // 4. HATÁSSZÜNET (800ms) a felugró ablak előtt
+                    setTimeout(() => {
+                        document.getElementById("prizeText").innerText = win;
+                        document.getElementById("customModal").style.display = "block";
+                    }, 800);
+
                 }, 5000);
             }, 50);
         }
 
-        function sendToForm(data) {
+        function sendToGoogle(data) {
             const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/formResponse";
             const form = document.createElement("form");
             form.target = "hidden_iframe"; form.method = "POST"; form.action = formURL;
             const n = document.createElement("input"); 
             n.name = "entry.1569039722"; n.value = data; form.appendChild(n);
             document.body.appendChild(form); form.submit();
+        }
+
+        function sendToDiscord(user, prize) {
+            const params = {
+                username: "Szerencsekerék Őre",
+                embeds: [{
+                    title: "🎉 Új Nyeremény!",
+                    color: 13401651, // Pergamen barna
+                    fields: [
+                        { name: "Hős neve:", value: user, inline: true },
+                        { name: "Nyeremény:", value: prize, inline: true }
+                    ],
+                    timestamp: new Date()
+                }]
+            };
+
+            fetch(webhookURL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(params)
+            });
         }
 
         window.onload = drawWheel;
