@@ -167,7 +167,7 @@
             }
         }
 
-        function spinWheel() {
+function spinWheel() {
             const user = document.getElementById("username").value.trim();
             if (!user) return alert("Add meg a neved, vitéz!");
 
@@ -178,47 +178,52 @@
             }
 
             const spinBtn = document.getElementById("spinBtn");
-            const style = window.getComputedStyle(canvas);
+            const wheelCanvas = document.getElementById("wheel");
+            
+            // 1. Megállapítjuk hol áll most pontosan
+            const style = window.getComputedStyle(wheelCanvas);
             const matrix = new WebKitCSSMatrix(style.transform);
             const currentAngle = Math.round(Math.atan2(matrix.b, matrix.a) * (180 / Math.PI));
             
             spinBtn.disabled = true;
 
-            // BUG FIX: Először megállítjuk a lassú forgást a jelenlegi foknál
-            canvas.classList.remove("spinning"); 
-            canvas.style.transform = `rotate(${currentAngle}deg)`;
+            // 2. Fixáljuk a jelenlegi helyzetében és LEVESSZÜK az alap animációt
+            wheelCanvas.style.animation = "none";
+            wheelCanvas.style.transform = `rotate(${currentAngle}deg)`;
             
-            // Force Reflow: kényszerítjük a böngészőt a váltás észlelésére
-            void canvas.offsetWidth;
-
-            // Indítjuk a nagy pörgetést
-            canvas.classList.add("spinning");
-            requestAnimationFrame(checkRotation);
-            
-            const spinDeg = Math.floor(Math.random() * 360) + 3600; 
-            currentRotation = currentAngle + spinDeg;
-            canvas.style.transform = `rotate(${currentRotation}deg)`;
-
+            // 3. Egy pici szünetet hagyunk (10ms), hogy a böngésző észlelje a váltást
             setTimeout(() => {
-                const finalStyle = window.getComputedStyle(canvas);
-                const finalMatrix = new WebKitCSSMatrix(finalStyle.transform);
-                const finalAngle = Math.atan2(finalMatrix.b, finalMatrix.a) * (180 / Math.PI);
-                const adjustedFinalAngle = (finalAngle < 0 ? finalAngle + 360 : finalAngle);
+                wheelCanvas.classList.add("spinning");
                 
-                const prizeIndex = Math.floor(((360 - adjustedFinalAngle) / (360 / prizes.length))) % prizes.length;
-                const winnerPrize = prizes[prizeIndex];
+                // Hangfigyelés indítása
+                requestAnimationFrame(checkRotation);
                 
-                document.getElementById("modalPrizeText").innerText = winnerPrize;
-                document.getElementById("prizeModal").style.display = "block";
+                // Véletlenszerű pörgés kiszámítása (legalább 10 kör + véletlen)
+                const spinDeg = Math.floor(Math.random() * 360) + 3600; 
+                currentRotation = currentAngle + spinDeg;
                 
-                if (user.toLowerCase() !== "teszt") {
-                    localStorage.setItem("lastSpin", new Date().toDateString());
-                }
-                
-                sendToDiscord(user, winnerPrize);
-                sendToGoogleSheet(user, winnerPrize);
-                spinBtn.disabled = false;
-            }, 5000);
+                // Elindítjuk a mozgást
+                wheelCanvas.style.transform = `rotate(${currentRotation}deg)`;
+
+                // 4. Megvárjuk a pörgés végét (5 másodperc)
+                setTimeout(() => {
+                    // Itt NEM vesszük le a .spinning-et azonnal, hogy ne ugorjon vissza
+                    const actualDeg = currentRotation % 360;
+                    const prizeIndex = Math.floor(((360 - (actualDeg % 360)) / (360 / prizes.length))) % prizes.length;
+                    const winnerPrize = prizes[prizeIndex];
+                    
+                    document.getElementById("modalPrizeText").innerText = winnerPrize;
+                    document.getElementById("prizeModal").style.display = "block";
+                    
+                    if (user.toLowerCase() !== "teszt") {
+                        localStorage.setItem("lastSpin", new Date().toDateString());
+                    }
+                    
+                    sendToDiscord(user, winnerPrize);
+                    sendToGoogleSheet(user, winnerPrize);
+                    spinBtn.disabled = false;
+                }, 5000);
+            }, 10); // Ez a 10ms-os késleltetés oldja meg a "lefagyást"
         }
 
         function closeModal() { document.getElementById("prizeModal").style.display = "none"; }
