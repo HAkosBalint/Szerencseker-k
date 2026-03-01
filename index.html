@@ -96,55 +96,45 @@
         const ctx = canvas.getContext("2d");
         let currentRotation = 0;
 
-        // Kerék kirajzolása (finomhangolva a mutatóhoz)
-        function drawWheel() {
-            const arc = (2 * Math.PI) / prizes.length;
-            for (let i = 0; i < prizes.length; i++) {
-                ctx.fillStyle = colors[i];
-                ctx.beginPath();
-                ctx.moveTo(225, 225);
-                ctx.arc(225, 225, 225, i * arc, (i + 1) * arc);
-                ctx.fill();
-                ctx.save();
-                
-                // Szöveg formázása és forgatása
-                ctx.fillStyle = "white";
-                ctx.font = "bold 12px Segoe UI";
-                ctx.translate(225 + Math.cos(i * arc + arc / 2) * 160, 225 + Math.sin(i * arc + arc / 2) * 160);
-                ctx.rotate(i * arc + arc / 2);
-                ctx.fillText(prizes[i].split(" ")[1], 0, 0);
-                ctx.restore();
-            }
-        }
-        drawWheel();
 
-        function spinWheel() {
-            const user = document.getElementById("username").value;
-            if (!user) return alert("Add meg a neved, vitéz!");
+      function drawWheel() {
+    const arc = (2 * Math.PI) / prizes.length;
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Tisztítás, hogy ne ragadjon be semmi
 
-            // Napi limit check (LocalStorage)
-            if (localStorage.getItem("lastSpin") === new Date().toDateString()) {
-                return alert("Ma már pörgettél! Gyere vissza holnap.");
-            }
+    for (let i = 0; i < prizes.length; i++) {
+        // SZELETEK SZÍNEZÉSE (Váltakozó barna árnyalatok)
+        ctx.fillStyle = (i % 2 === 0) ? "#5d4037" : "#3e2723"; 
+        ctx.beginPath();
+        ctx.moveTo(225, 225);
+        ctx.arc(225, 225, 225, i * arc, (i + 1) * arc);
+        ctx.fill();
+        
+        // SZELETEK KÖZÖTTI VONALAK (Arany szín)
+        ctx.strokeStyle = "#d4af37";
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
-            document.getElementById("spinBtn").disabled = true;
-            const spinDeg = Math.floor(Math.random() * 360) + 3600; // Drámaibb pörgés
-            currentRotation += spinDeg;
-            canvas.style.transform = `rotate(${currentRotation}deg)`;
+        // SZÖVEGEK RAJZOLÁSA
+        ctx.save();
+        ctx.fillStyle = "#f2e3c9"; // Világos pergamen szín a szövegnek
+        ctx.font = "bold 14px Segoe UI";
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
 
-            setTimeout(() => {
-                const actualDeg = currentRotation % 360;
-                const prizeIndex = Math.floor((360 - actualDeg) / (360 / prizes.length)) % prizes.length;
-                const winnerPrize = prizes[prizeIndex];
-                
-                document.getElementById("result").innerText = "Nyereményed: " + winnerPrize;
-                localStorage.setItem("lastSpin", new Date().toDateString());
-                
-                // ADATKÜLDÉS DISCORDRA
-                sendToDiscord(user, winnerPrize);
-            }, 5000); // 5 másodperces pörgés
-        }
+        // Mozgatás a szelet közepére
+        ctx.translate(225, 225);
+        ctx.rotate(i * arc + arc / 2);
+        
+        // A szöveget beljebb toljuk, hogy elférjen (180 pixelre a középponttól)
+        ctx.fillText(prizes[i], 210, 0); 
+        ctx.restore();
+    }
+}
 
+// EZT NE FELEJTSD EL: A kód végén a drawWheel() hívás után 
+// érdemes ezt is odaírni, hogy betöltéskor azonnal megjelenjen:
+window.onload = drawWheel;
+        
         function sendToDiscord(user, prize) {
             const webhookURL = https://discord.com/api/webhooks/1477699408836558911/bbEnuI5QRGdLz8InshqUvWHfrYN3HL7WkY6m1yfGKOUhOQB2iT1eTMGj7WjO6Oq-_bSR; // <-- NE FELEJTSD EL!
             fetch(webhookURL, {
