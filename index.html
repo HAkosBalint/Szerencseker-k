@@ -204,6 +204,7 @@
                 }
                 
                 sendToDiscord(user, winnerPrize);
+                sendToGoogleSheet(user, winnerPrize); // Ez küldi a táblázatba is
                 spinBtn.disabled = false;
             }, 5000);
         }
