@@ -73,7 +73,7 @@
 
     <img src="Screenshot_20260227_124403.jpg" class="guild-logo" alt="BeGombázók Logó">
 
-    <audio id="clickSound" src="https://cdn.pixabay.com/audio/2022/03/10/audio_5fe148353b.mp3" preload="auto"></audio>
+    <audio id="clickSound" src="https://www.soundjay.com/communication/pokes-1.mp3" preload="auto"></audio>
 
     <div id="prizeModal">
         <div class="modal-content">
@@ -127,6 +127,7 @@
                 ctx.fillText(prizes[i], 215, 0); 
                 ctx.restore();
             }
+            // Középrész
             ctx.beginPath();
             ctx.arc(225, 225, 40, 0, 2 * Math.PI);
             ctx.fillStyle = "#5d4037";
@@ -136,11 +137,13 @@
             ctx.stroke();
         }
 
-        // JAVÍTOTT HANG LEJÁTSZÁS
+        // Hang lejátszása klónozással a biztosabb működésért
         function playClick() {
-            clickSound.pause();
-            clickSound.currentTime = 0;
-            clickSound.play().catch(() => {});
+            if (clickSound) {
+                const soundClone = clickSound.cloneNode();
+                soundClone.volume = 0.4;
+                soundClone.play().catch(() => {});
+            }
         }
 
         function checkRotation() {
@@ -190,7 +193,7 @@
                     const finalMatrix = new WebKitCSSMatrix(finalStyle.transform);
                     const finalAngle = Math.atan2(finalMatrix.b, finalMatrix.a) * (180 / Math.PI);
                     const adjustedFinalAngle = (finalAngle < 0 ? finalAngle + 360 : finalAngle);
-                    const prizeIndex = Math.floor(((360 - adjustedFinalAngle) / (360 / prizes.length))) % prizes.length;
+                    const prizeIndex = Math.floor(((360 - (adjustedFinalAngle % 360)) / (360 / prizes.length))) % prizes.length;
                     const winnerPrize = prizes[prizeIndex];
                     
                     document.getElementById("modalPrizeText").innerText = winnerPrize;
@@ -210,7 +213,6 @@
             document.getElementById("prizeModal").style.display = "none";
             canvas.classList.remove("spinning");
             canvas.style.transform = ""; 
-            // Kényszerített újraindítás az alap animációhoz
             void canvas.offsetWidth;
             canvas.style.animation = "slow-spin 30s linear infinite";
         }
@@ -224,6 +226,7 @@
             });
         }
 
+        // Javított Google Sheets beküldés a kért ID-val
         function sendToGoogleSheet(user, prize) {
             const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/formResponse";
             const formData = new FormData();
