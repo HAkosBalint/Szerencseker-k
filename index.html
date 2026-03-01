@@ -24,16 +24,13 @@
 
         .container { position: relative; display: inline-block; margin: 20px 0; }
         
-        /* Kerék stílus */
         canvas { 
             border: 12px solid #3e2723; border-radius: 50%; background: #4e342e;
-            /* Folyamatos lassú forgás alaphelyzetben */
             animation: slow-spin 40s linear infinite;
         }
 
         @keyframes slow-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* Erőteljes pörgetés animáció */
         .spinning-active { 
             animation: none !important; 
             transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1) !important; 
@@ -50,7 +47,6 @@
             color: #f2e3c9; padding: 12px 40px; font-size: 22px; font-weight: bold; cursor: pointer; 
             border-radius: 5px; text-shadow: 2px 2px 2px #000; margin-top: 15px;
         }
-        button:hover { brightness(1.2); }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
 
         input { 
@@ -113,26 +109,31 @@
         }
 
         function spinWheel() {
-            const user = document.getElementById("username").value.trim();
+            const user = document.getElementById("username").value.trim().toLowerCase();
             if (!user) return alert("Kérlek, add meg a Discord neved!");
+
+            // NAPI LIMIT ELLENŐRZÉSE
+            const today = new Date().toISOString().slice(0, 10); // Pl: "2026-03-01"
+            const lastSpin = localStorage.getItem("spin_" + user);
+
+            if (lastSpin === today) {
+                alert("Vitéz! Ezzel a névvel ma már pörgettél. Gyere vissza holnap!");
+                return;
+            }
             
             const btn = document.getElementById("spinBtn");
             btn.disabled = true;
 
-            // Kiszámítjuk az aktuális szöget, hogy onnan folytassa
             const style = window.getComputedStyle(canvas);
             const matrix = new WebKitCSSMatrix(style.transform);
             const currentAngle = Math.round(Math.atan2(matrix.b, matrix.a) * (180/Math.PI));
             
             canvas.classList.add("spinning-active");
-            
-            // Random pörgetés (legalább 10 fordulat)
             const extraRotation = Math.floor(Math.random() * 360) + 3600;
             const totalRotation = extraRotation + (currentAngle < 0 ? currentAngle + 360 : currentAngle);
             
             canvas.style.transform = `rotate(${totalRotation}deg)`;
 
-            // Várjuk meg az animáció végét (5mp)
             setTimeout(() => {
                 const actualDeg = totalRotation % 360;
                 const idx = Math.floor(((360 - actualDeg) / (360 / prizes.length))) % prizes.length;
@@ -141,32 +142,23 @@
                 document.getElementById("modalPrizeText").innerText = win;
                 document.getElementById("prizeModal").style.display = "block";
                 
-                // Csak most küldjük el az adatot!
+                // Mentés a helyi tárolóba
+                localStorage.setItem("spin_" + user, today);
+                
                 sendToGoogleSheet(user, win);
             }, 5000);
         }
 
         function sendToGoogleSheet(user, prize) {
             const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/formResponse";
-            
             const form = document.createElement("form");
-            form.target = "hidden_iframe"; 
-            form.method = "POST"; 
-            form.action = formURL;
+            form.target = "hidden_iframe"; form.method = "POST"; form.action = formURL;
             
-            // Mező azonosítók
-            const n = document.createElement("input"); 
-            n.type="hidden"; n.name = "entry.1569039722"; n.value = user; 
-            form.appendChild(n);
-            
-            const p = document.createElement("input"); 
-            p.type="hidden"; p.name = "entry.916111113"; p.value = prize; 
-            form.appendChild(p);
+            const n = document.createElement("input"); n.type="hidden"; n.name = "entry.1569039722"; n.value = user; form.appendChild(n);
+            const p = document.createElement("input"); p.type="hidden"; p.name = "entry.916111113"; p.value = prize; form.appendChild(p);
             
             document.body.appendChild(form);
             form.submit();
-            
-            // Takarítás
             setTimeout(() => { document.body.removeChild(form); }, 1000);
         }
 
