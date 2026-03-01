@@ -9,139 +9,64 @@
             color: #e0c9a6; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             text-align: center; 
-            margin: 0;
-            padding: 20px;
-            overflow-x: hidden;
+            margin: 0; padding: 20px; overflow-x: hidden;
         }
 
-        /* --- CÉH LOGÓ STÍLUS (A beküldött fájlnévvel) --- */
         .guild-logo {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 150px; /* Itt állíthatod a méretet */
-            height: auto;
-            z-index: 100;
+            position: absolute; top: 10px; right: 10px;
+            width: 150px; height: auto; z-index: 100;
             filter: drop-shadow(0 0 5px rgba(0,0,0,0.8));
         }
 
-        .container { 
-            margin-top: 50px; 
-            position: relative; 
-            display: inline-block;
-        }
+        .container { margin-top: 50px; position: relative; display: inline-block; }
 
-        /* --- KERÉK ÉS ANIMÁCIÓ --- */
         canvas { 
-            border: 12px solid #5d4037; 
-            border-radius: 50%; 
-            box-shadow: 0 0 25px rgba(0,0,0,0.7); 
-            background: #3e2723; 
-            /* Lassú alapforgás */
+            border: 12px solid #5d4037; border-radius: 50%; 
+            box-shadow: 0 0 25px rgba(0,0,0,0.7); background: #3e2723; 
             animation: slow-spin 30s linear infinite;
         }
 
-        @keyframes slow-spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
+        @keyframes slow-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* Pörgetéskor kikapcsoljuk az alap animációt */
-        .spinning {
-            animation: none !important;
-            transition: transform 5s cubic-bezier(0.1, 0, 0.2, 1);
-        }
+        .spinning { animation: none !important; transition: transform 5s cubic-bezier(0.1, 0, 0.2, 1); }
 
         .pointer {
-            position: absolute;
-            top: 50%;
-            right: -30px;
-            transform: translateY(-50%);
-            width: 0; 
-            height: 0; 
-            border-top: 25px solid transparent;
-            border-bottom: 25px solid transparent;
-            border-right: 50px solid #d4af37;
-            z-index: 10;
+            position: absolute; top: 50%; right: -30px; transform: translateY(-50%);
+            width: 0; height: 0; border-top: 25px solid transparent;
+            border-bottom: 25px solid transparent; border-right: 50px solid #d4af37; z-index: 10;
         }
 
         button { 
-            background: #8b5a2b; 
-            border: 2px solid #d4af37; 
-            color: #f2e3c9; 
-            padding: 15px 30px; 
-            font-size: 22px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            border-radius: 8px; 
-            margin-top: 25px; 
-            transition: 0.3s; 
-            text-shadow: 1px 1px 2px black;
+            background: #8b5a2b; border: 2px solid #d4af37; color: #f2e3c9; 
+            padding: 15px 30px; font-size: 22px; font-weight: bold; cursor: pointer; 
+            border-radius: 8px; margin-top: 25px; transition: 0.3s; text-shadow: 1px 1px 2px black;
         }
-        button:hover { 
-            background: #d4af37; 
-            color: #1a0f0a; 
-            transform: scale(1.08); 
-        }
-        button:disabled { 
-            background: #555; 
-            border-color: #777; 
-            cursor: not-allowed; 
-        }
+        button:hover { background: #d4af37; color: #1a0f0a; transform: scale(1.08); }
+        button:disabled { background: #555; border-color: #777; cursor: not-allowed; }
+
         input { 
-            padding: 12px; 
-            border-radius: 5px; 
-            border: 2px solid #5d4037; 
-            background: #3e2723; 
-            color: #f2e3c9; 
-            margin-bottom: 15px; 
-            width: 250px; 
-            font-size: 16px;
+            padding: 12px; border-radius: 5px; border: 2px solid #5d4037; 
+            background: #3e2723; color: #f2e3c9; margin-bottom: 15px; width: 250px; font-size: 16px;
         }
 
-        /* --- MODAL STÍLUSOK --- */
         #prizeModal {
-            display: none; 
-            position: fixed; 
-            z-index: 200; 
-            left: 0; 
-            top: 0; 
-            width: 100%; 
-            height: 100%; 
-            background-color: rgba(0,0,0,0.85);
-            backdrop-filter: blur(5px);
+            display: none; position: fixed; z-index: 200; left: 0; top: 0; 
+            width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
         }
 
         .modal-content {
-            background: #3e2723; 
-            color: #f2e3c9; 
-            margin: 10% auto; 
-            padding: 40px; 
-            border: 4px solid #d4af37; 
-            width: 320px; 
-            border-radius: 20px; 
-            box-shadow: 0 0 50px rgba(212, 175, 55, 0.5); 
-            text-align: center;
-            animation: slideIn 0.5s ease-out;
+            background: #3e2723; color: #f2e3c9; margin: 10% auto; padding: 40px; 
+            border: 4px solid #d4af37; width: 320px; border-radius: 20px; 
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.5); text-align: center;
         }
-
-        @keyframes slideIn {
-            from { transform: translateY(-100px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal-content h2 { color: #d4af37; margin-top: 0; font-size: 28px; }
-        .modal-content p { font-size: 24px; font-weight: bold; margin: 20px 0; }
-        .close-btn { width: 100%; }
-
-        @media (max-width: 600px) {
-            .guild-logo { width: 80px; }
-        }
+        .close-btn { width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <img src="Screenshot_20260227_124403.jpg" class="guild-logo" alt="BeGombázók Logó">
+
+    <audio id="clickSound" src="https://www.soundjay.com/buttons/button-50.mp3" preload="auto"></audio>
 
     <div id="prizeModal">
         <div class="modal-content">
@@ -169,20 +94,20 @@
         const colors = ["#8d6e63", "#5d4037", "#a1887f", "#4e342e", "#8d6e63", "#5d4037", "#a1887f", "#4e342e"];
         const canvas = document.getElementById("wheel");
         const ctx = canvas.getContext("2d");
+        const clickSound = document.getElementById("clickSound");
         let currentRotation = 0;
+        let lastPrizeIndex = -1;
 
         function drawWheel() {
             const arc = (2 * Math.PI) / prizes.length;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Körcikkek és nyeremények rajzolása
             for (let i = 0; i < prizes.length; i++) {
                 ctx.beginPath();
                 ctx.fillStyle = colors[i];
                 ctx.moveTo(225, 225);
                 ctx.arc(225, 225, 225, i * arc, (i + 1) * arc);
                 ctx.fill();
-                
                 ctx.strokeStyle = "#d4af37";
                 ctx.lineWidth = 2;
                 ctx.stroke();
@@ -190,31 +115,47 @@
                 ctx.save();
                 ctx.fillStyle = "white";
                 ctx.font = "bold 15px Segoe UI";
-                ctx.shadowBlur = 4;
-                ctx.shadowColor = "black";
                 ctx.textAlign = "right";
                 ctx.textBaseline = "middle";
-
                 ctx.translate(225, 225);
                 ctx.rotate(i * arc + arc / 2);
                 ctx.fillText(prizes[i], 215, 0); 
                 ctx.restore();
             }
 
-            // --- ÚJ RÉSZ: FIX KÖZÉPRÉSZ ---
+            // Középrész
             ctx.beginPath();
-            ctx.arc(225, 225, 40, 0, 2 * Math.PI); // A belső kör mérete (40px)
-            ctx.fillStyle = "#5d4037";           // Sötétbarna szín (mint a keret)
+            ctx.arc(225, 225, 40, 0, 2 * Math.PI);
+            ctx.fillStyle = "#5d4037";
             ctx.fill();
-            ctx.strokeStyle = "#d4af37";         // Arany szegély a közepének
+            ctx.strokeStyle = "#d4af37";
             ctx.lineWidth = 4;
             ctx.stroke();
+        }
+
+        // Hang lejátszása
+        function playClick() {
+            clickSound.currentTime = 0;
+            clickSound.play().catch(() => {});
+        }
+
+        // Folyamatos ellenőrzés a pörgetés alatt
+        function checkRotation() {
+            const style = window.getComputedStyle(canvas);
+            const matrix = new WebKitCSSMatrix(style.transform);
+            const angle = Math.atan2(matrix.b, matrix.a) * (180 / Math.PI);
+            const adjustedAngle = (angle < 0 ? angle + 360 : angle);
             
-            // Egy pici extra díszítés a legközepére
-            ctx.beginPath();
-            ctx.arc(225, 225, 10, 0, 2 * Math.PI);
-            ctx.fillStyle = "#d4af37";
-            ctx.fill();
+            const prizeIndex = Math.floor(((360 - adjustedAngle) / (360 / prizes.length))) % prizes.length;
+
+            if (prizeIndex !== lastPrizeIndex) {
+                playClick();
+                lastPrizeIndex = prizeIndex;
+            }
+
+            if (canvas.classList.contains("spinning")) {
+                requestAnimationFrame(checkRotation);
+            }
         }
 
         function spinWheel() {
@@ -228,24 +169,22 @@
             }
 
             const spinBtn = document.getElementById("spinBtn");
-            const wheelCanvas = document.getElementById("wheel");
-            
-            // Kiszámoljuk az aktuális szöget a lassú forgás közben
-            const style = window.getComputedStyle(wheelCanvas);
+            const style = window.getComputedStyle(canvas);
             const matrix = new WebKitCSSMatrix(style.transform);
             const currentAngle = Math.round(Math.atan2(matrix.b, matrix.a) * (180 / Math.PI));
             
             spinBtn.disabled = true;
+            canvas.classList.add("spinning");
             
-            // Átváltás pörgető üzemmódra (leáll a lassú animáció)
-            wheelCanvas.classList.add("spinning");
+            // Hangfigyelés indítása
+            requestAnimationFrame(checkRotation);
             
             const spinDeg = Math.floor(Math.random() * 360) + 3600; 
             currentRotation = currentAngle + spinDeg;
-            
-            wheelCanvas.style.transform = `rotate(${currentRotation}deg)`;
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
 
             setTimeout(() => {
+                canvas.classList.remove("spinning");
                 const actualDeg = currentRotation % 360;
                 const prizeIndex = Math.floor(((360 - (actualDeg % 360)) / (360 / prizes.length))) % prizes.length;
                 const winnerPrize = prizes[prizeIndex];
@@ -263,34 +202,23 @@
             }, 5000);
         }
 
-        function closeModal() {
-            document.getElementById("prizeModal").style.display = "none";
-        }
+        function closeModal() { document.getElementById("prizeModal").style.display = "none"; }
 
         function sendToDiscord(user, prize) {
             const webhookURL = "https://discord.com/api/webhooks/1477720960827130159/k3Pi8AiXOpDuUAJi4FJhNr6KtBANTbDV9-nzarCXVYB9dnGwtxu9E9zy15uJNgzcPdJP"; 
             fetch(webhookURL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    content: `🎰 **${user}** pörgetett és nyert: **${prize}**!`
-                })
+                body: JSON.stringify({ content: `🎰 **${user}** pörgetett és nyert: **${prize}**!` })
             });
         }
 
         function sendToGoogleSheet(user, prize) {
             const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/formResponse";
             const formData = new FormData();
-            
-            // A te Formod pontos ID-jai
             formData.append("entry.1569039722", user); 
             formData.append("entry.1105994344", prize); 
-        
-            fetch(formURL, {
-                method: "POST",
-                mode: "no-cors", 
-                body: formData
-            });
+            fetch(formURL, { method: "POST", mode: "no-cors", body: formData });
         }
 
         window.onload = drawWheel;
