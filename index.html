@@ -7,28 +7,14 @@
         body { background: #1a0f0a; color: #f2e3c9; font-family: 'Times New Roman', serif; text-align: center; padding: 20px; }
         .main-container { background: #dcc296; display: inline-block; padding: 30px; border-radius: 15px; border: 2px solid #5d4037; box-shadow: 0 0 40px #000; }
         .container { position: relative; display: inline-block; margin: 20px 0; }
-        
         #wheel { border: 10px solid #3e2723; border-radius: 50%; background: #4e342e; display: block; }
-
-        /* Alap lassú forgás */
         .idle-spin { animation: slow-spin 30s linear infinite; }
         @keyframes slow-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        /* Pörgetés átmenete */
         .spinning { transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1); }
-
-        .pointer { 
-            position: absolute; top: 50%; right: -25px; transform: translateY(-50%); 
-            width: 0; height: 0; border-top: 20px solid transparent; border-bottom: 20px solid transparent; 
-            border-right: 45px solid #d4af37; z-index: 10; 
-        }
-
+        .pointer { position: absolute; top: 50%; right: -25px; transform: translateY(-50%); width: 0; height: 0; border-top: 20px solid transparent; border-bottom: 20px solid transparent; border-right: 45px solid #d4af37; z-index: 10; }
         input { padding: 12px; width: 220px; text-align: center; font-size: 16px; border-radius: 8px; border: 2px solid #5d4037; background: #fdf5e6; }
-        button { background: linear-gradient(to bottom, #8b5a2b, #4e342e); border: 2px solid #d4af37; color: #f2e3c9; 
-                 padding: 12px 30px; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 8px; margin-top: 15px; }
-        button:disabled { opacity: 0.5; }
-
-        /* Egyedi Modal */
+        button { background: linear-gradient(to bottom, #8b5a2b, #4e342e); border: 2px solid #d4af37; color: #f2e3c9; padding: 12px 30px; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 8px; margin-top: 15px; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
         #customModal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); }
         .modal-content { background: #dcc296; margin: 15% auto; padding: 25px; border: 4px solid #5d4037; width: 280px; border-radius: 15px; color: #3e2723; box-shadow: 0 0 20px #000; }
     </style>
@@ -79,13 +65,21 @@
         }
 
         function spinWheel() {
-            const user = document.getElementById("username").value.trim();
+            const user = document.getElementById("username").value.trim().toLowerCase();
             if (!user) return alert("Hősöm, add meg a neved!");
+
+            // --- NAPI ELLENŐRZÉS START ---
+            const today = new Date().toDateString();
+            const lastSpin = localStorage.getItem("lastSpin_" + user);
+
+            if (lastSpin === today) {
+                return alert("Vitéz! Ma már próbáltál szerencsét, gyere vissza holnap!");
+            }
+            // --- NAPI ELLENŐRZÉS END ---
 
             const btn = document.getElementById("spinBtn");
             btn.disabled = true;
 
-            // 1. Megállítjuk a lassú forgást és rögzítjük a szöget
             const style = window.getComputedStyle(canvas);
             const matrix = new WebKitCSSMatrix(style.transform);
             const currentRotation = Math.round(Math.atan2(matrix.b, matrix.a) * (180/Math.PI));
@@ -93,27 +87,24 @@
             canvas.classList.remove("idle-spin");
             canvas.style.transform = `rotate(${currentRotation}deg)`;
 
-            // 2. Rövid szünet után nagy pörgetés indítása
             setTimeout(() => {
                 canvas.classList.add("spinning");
                 const extraSpin = 3600 + Math.floor(Math.random() * 360);
                 const finalRotation = currentRotation + extraSpin;
                 canvas.style.transform = `rotate(${finalRotation}deg)`;
 
-                // 3. Megvárjuk az 5 másodperces pörgést + egy kis hatásszünetet
                 setTimeout(() => {
                     const actualStopAngle = finalRotation % 360;
                     const normalizedAngle = (360 - (actualStopAngle < 0 ? actualStopAngle + 360 : actualStopAngle)) % 360;
                     const idx = Math.floor(normalizedAngle / (360 / prizes.length));
                     const win = prizes[idx];
                     
-                    // Adatküldés a Google Táblázatba (Név + Nyeremény összefűzve)
+                    // Mentés a böngészőbe
+                    localStorage.setItem("lastSpin_" + user, today);
+
                     sendToGoogle(user + " - " + win);
-                    
-                    // Discord Webhook küldés
                     sendToDiscord(user, win);
 
-                    // 4. HATÁSSZÜNET (800ms) a felugró ablak előtt
                     setTimeout(() => {
                         document.getElementById("prizeText").innerText = win;
                         document.getElementById("customModal").style.display = "block";
@@ -137,7 +128,7 @@
                 username: "Szerencsekerék Őre",
                 embeds: [{
                     title: "🎉 Új Nyeremény!",
-                    color: 13401651, // Pergamen barna
+                    color: 13401651,
                     fields: [
                         { name: "Hős neve:", value: user, inline: true },
                         { name: "Nyeremény:", value: prize, inline: true }
@@ -145,12 +136,7 @@
                     timestamp: new Date()
                 }]
             };
-
-            fetch(webhookURL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(params)
-            });
+            fetch(webhookURL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) });
         }
 
         window.onload = drawWheel;
