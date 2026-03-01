@@ -227,6 +227,25 @@
                 console.error("Hiba történt:", error);
             });
         }
+        function sendToGoogleSheet(user, prize) {
+            // CSERÉLD KI: A te Formod linkje (a /viewform helyett /formResponse kell a végére!)
+            const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/viewform";
+            
+            const formData = new FormData();
+            // CSERÉLD KI: Az entry számokat a sajátjaidra!
+            formData.append("entry.0", user); // Név mező ID
+            formData.append("entry.2", prize); // Nyeremény mező ID
+        
+            fetch(formURL, {
+                method: "POST",
+                mode: "no-cors", // Ez fontos, hogy ne kapj hibaüzenetet
+                body: formData
+            }).then(() => {
+                console.log("Táblázatba mentve!");
+            }).catch((error) => {
+                console.error("Táblázat hiba:", error);
+            });
+        }
 
         window.onload = drawWheel;
     </script>
