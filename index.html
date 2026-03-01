@@ -5,7 +5,7 @@
     <title>Abul-Akbar Szerencsekereke</title>
     <style>
         body { 
-            background: #1a0f0a; 
+            background: #001B5C; 
             color: #e0c9a6; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             text-align: center; 
@@ -76,7 +76,7 @@
 </head>
 <body>
 
-    <h1>🎡 Abul-Akbar Szerencsekereke</h1>
+    <h1>🎡 BeGombázók kereke</h1>
     <p>Vitéz! Írd be a neved, és pörgess a napi jutalmadért!</p>
     
     <input type="text" id="username" placeholder="Discord neved..."><br>
@@ -86,7 +86,7 @@
     </div>
 
     <br>
-    <button id="spinBtn" onclick="spinWheel()">PÖRGETÉS!</button>
+    <button id="spinBtn" onclick="spinWheel()">PÖRGETÉS</button>
     <p id="result" style="font-size: 24px; font-weight: bold; margin-top: 20px;"></p>
 
     <script>
@@ -109,7 +109,9 @@
                 
                 // Szöveg formázása és forgatása
                 ctx.fillStyle = "white";
-                ctx.font = "bold 18px Segoe UI";
+                ctx.font = "bold 10px Segoe UI";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
                 ctx.translate(225 + Math.cos(i * arc + arc / 2) * 160, 225 + Math.sin(i * arc + arc / 2) * 160);
                 ctx.rotate(i * arc + arc / 2);
                 ctx.fillText(prizes[i].split(" ")[1], 0, 0);
@@ -146,7 +148,7 @@
         }
 
         function sendToDiscord(user, prize) {
-            const webhookURL = "IDE_MÁSOLD_BE_A_DISCORD_WEBHOOKODAT"; // <-- NE FELEJTSD EL!
+            const webhookURL = https://discord.com/api/webhooks/1477699408836558911/bbEnuI5QRGdLz8InshqUvWHfrYN3HL7WkY6m1yfGKOUhOQB2iT1eTMGj7WjO6Oq-_bSR; // <-- NE FELEJTSD EL!
             fetch(webhookURL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
