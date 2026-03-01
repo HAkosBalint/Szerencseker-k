@@ -13,19 +13,45 @@
             padding: 20px;
             overflow-x: hidden;
         }
+
+        /* --- CÉH LOGÓ STÍLUS --- */
+        .guild-logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 150px; /* Itt állíthatod a méretet */
+            height: auto;
+            z-index: 100;
+            filter: drop-shadow(0 0 5px rgba(0,0,0,0.8));
+        }
+
         .container { 
             margin-top: 50px; 
             position: relative; 
             display: inline-block;
         }
+
+        /* --- KERÉK ÉS ANIMÁCIÓ --- */
         canvas { 
             border: 12px solid #5d4037; 
             border-radius: 50%; 
             box-shadow: 0 0 25px rgba(0,0,0,0.7); 
             background: #3e2723; 
+            /* Lassú alapforgás */
+            animation: slow-spin 30s linear infinite;
+        }
+
+        @keyframes slow-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Pörgetéskor kikapcsoljuk az alap animációt */
+        .spinning {
+            animation: none !important;
             transition: transform 5s cubic-bezier(0.1, 0, 0.2, 1);
         }
-        
+
         .pointer {
             position: absolute;
             top: 50%;
@@ -77,7 +103,7 @@
         #prizeModal {
             display: none; 
             position: fixed; 
-            z-index: 100; 
+            z-index: 200; 
             left: 0; 
             top: 0; 
             width: 100%; 
@@ -96,7 +122,6 @@
             border-radius: 20px; 
             box-shadow: 0 0 50px rgba(212, 175, 55, 0.5); 
             text-align: center;
-            position: relative;
             animation: slideIn 0.5s ease-out;
         }
 
@@ -107,10 +132,16 @@
 
         .modal-content h2 { color: #d4af37; margin-top: 0; font-size: 28px; }
         .modal-content p { font-size: 24px; font-weight: bold; margin: 20px 0; }
-        .close-btn { width: 100%; margin-top: 10px; }
+        .close-btn { width: 100%; }
+
+        @media (max-width: 600px) {
+            .guild-logo { width: 80px; }
+        }
     </style>
 </head>
 <body>
+
+    <img src="logo.png" class="guild-logo" alt="BeGombázók Logó">
 
     <div id="prizeModal">
         <div class="modal-content">
@@ -132,7 +163,6 @@
 
     <br>
     <button id="spinBtn" onclick="spinWheel()">PÖRGETÉS</button>
-    <p id="result" style="display: none;"></p>
 
     <script>
         const prizes = ["🍄 5 Gomba", "💰 1000 Arany", "💀 Balszerencse", "🍄 10 Gomba", "🛡️ Új Rang", "🍻 Egy sör", "💎 Drágakő", "⚔️ Fegyver"];
@@ -175,7 +205,6 @@
             const user = document.getElementById("username").value.trim();
             if (!user) return alert("Add meg a neved, vitéz!");
 
-            // Napi korlát és 'teszt' kiskapu
             if (user.toLowerCase() !== "teszt") {
                 if (localStorage.getItem("lastSpin") === new Date().toDateString()) {
                     return alert("Ma már pörgettél! Gyere vissza holnap.");
@@ -183,28 +212,35 @@
             }
 
             const spinBtn = document.getElementById("spinBtn");
+            const wheelCanvas = document.getElementById("wheel");
+            
+            // Kiszámoljuk a pillanatnyi szöget az animációból
+            const style = window.getComputedStyle(wheelCanvas);
+            const matrix = new WebKitCSSMatrix(style.transform);
+            const currentAngle = Math.round(Math.atan2(matrix.b, matrix.a) * (180 / Math.PI));
+            
             spinBtn.disabled = true;
+            wheelCanvas.classList.add("spinning");
             
             const spinDeg = Math.floor(Math.random() * 360) + 3600; 
-            currentRotation += spinDeg;
-            canvas.style.transform = `rotate(${currentRotation}deg)`;
+            currentRotation = currentAngle + spinDeg;
+            
+            wheelCanvas.style.transform = `rotate(${currentRotation}deg)`;
 
             setTimeout(() => {
                 const actualDeg = currentRotation % 360;
                 const prizeIndex = Math.floor(((360 - (actualDeg % 360)) / (360 / prizes.length))) % prizes.length;
                 const winnerPrize = prizes[prizeIndex];
                 
-                // --- MODAL MEGJELENÍTÉSE ---
                 document.getElementById("modalPrizeText").innerText = winnerPrize;
                 document.getElementById("prizeModal").style.display = "block";
                 
-                // Adat mentése (csak ha nem teszt)
                 if (user.toLowerCase() !== "teszt") {
                     localStorage.setItem("lastSpin", new Date().toDateString());
                 }
                 
                 sendToDiscord(user, winnerPrize);
-                sendToGoogleSheet(user, winnerPrize); // Ez küldi a táblázatba is
+                sendToGoogleSheet(user, winnerPrize);
                 spinBtn.disabled = false;
             }, 5000);
         }
@@ -215,37 +251,27 @@
 
         function sendToDiscord(user, prize) {
             const webhookURL = "https://discord.com/api/webhooks/1477720960827130159/k3Pi8AiXOpDuUAJi4FJhNr6KtBANTbDV9-nzarCXVYB9dnGwtxu9E9zy15uJNgzcPdJP"; 
-            
             fetch(webhookURL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     content: `🎰 **${user}** pörgetett és nyert: **${prize}**!`
                 })
-            }).then(response => {
-                console.log("Discord üzenet elküldve!");
-            }).catch(error => {
-                console.error("Hiba történt:", error);
             });
         }
+
         function sendToGoogleSheet(user, prize) {
-            // Fontos: a link végén /formResponse legyen!
             const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/formResponse";
-            
             const formData = new FormData();
             
-            // A képről kiolvasott pontos azonosítók
-            formData.append("entry.1569039722", user);  // Ez megy a 'név' oszlopba
-            formData.append("entry.1105994344", prize); // Ez megy a 'Nyeremény' oszlopba
+            // A te Formod pontos ID-jai
+            formData.append("entry.1569039722", user); 
+            formData.append("entry.1105994344", prize); 
         
             fetch(formURL, {
                 method: "POST",
                 mode: "no-cors", 
                 body: formData
-            }).then(() => {
-                console.log("Sikeres mentés a Google Táblázatba!");
-            }).catch((error) => {
-                console.error("Hiba történt a táblázatnál:", error);
             });
         }
 
