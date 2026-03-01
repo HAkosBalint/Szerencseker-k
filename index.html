@@ -229,10 +229,20 @@
         // Javított Google Sheets beküldés a kért ID-val
         function sendToGoogleSheet(user, prize) {
             const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/formResponse";
-            const formData = new FormData();
-            formData.append("entry.1569039722", user); 
-            formData.append("entry.916111113", prize); 
-            fetch(formURL, { method: "POST", mode: "no-cors", body: formData });
+            
+            // Paraméterek összeállítása URL formátumban
+            const params = new URLSearchParams();
+            params.append("entry.1569039722", user); 
+            params.append("entry.916111113", prize); 
+        
+            fetch(formURL, {
+                method: "POST",
+                mode: "no-cors", // Ez kell a Google Forms-hoz
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: params.toString()
+            }).then(() => {
+                console.log("Adat elküldve a táblázatba!");
+            }).catch(e => console.error("Hiba:", e));
         }
 
         window.onload = drawWheel;
