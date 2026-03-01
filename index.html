@@ -229,24 +229,23 @@
             });
         }
         function sendToGoogleSheet(user, prize) {
-            // 1. JAVÍTÁS: A link vége formResponse legyen!
+            // Fontos: a link végén /formResponse legyen!
             const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/formResponse";
             
             const formData = new FormData();
             
-            // 2. JAVÍTÁS: Itt a 0 és 2 helyére a saját entry számaidat írd be!
-            // Ezeket a Form forráskódjában találod (Ctrl+F-el keress rá: "entry.")
-            formData.append("entry.entry.1569039722", user); 
-            formData.append("entry.entry.1105994344", prize); 
+            // A képről kiolvasott pontos azonosítók
+            formData.append("entry.1569039722", user);  // Ez megy a 'név' oszlopba
+            formData.append("entry.1105994344", prize); // Ez megy a 'Nyeremény' oszlopba
         
             fetch(formURL, {
                 method: "POST",
                 mode: "no-cors", 
                 body: formData
             }).then(() => {
-                console.log("Sikeresen elküldve a Google-nek!");
+                console.log("Sikeres mentés a Google Táblázatba!");
             }).catch((error) => {
-                console.error("Hiba:", error);
+                console.error("Hiba történt a táblázatnál:", error);
             });
         }
 
