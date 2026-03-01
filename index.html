@@ -162,7 +162,7 @@ function sendToDiscord(user, prize) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            content: `🎰 **${user}** pörgetett és nyert: **${prize}**!`
+            content: `🎡 **${user}** pörgetett és nyert: **${prize}**!`
         })
     }).then(response => {
         console.log("Discord üzenet elküldve!");
