@@ -2,32 +2,159 @@
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
-    <title>Szerencsekerék - Discord</title>
+    <title>Szerencsekerék - Hősök Csarnoka</title>
+    <link href="https://fonts.googleapis.com/css2?family=Metamorphous&display=swap" rel="stylesheet">
     <style>
-        body { background: #1a0f0a; color: #f2e3c9; font-family: 'Times New Roman', serif; text-align: center; padding: 20px; }
-        .main-container { background: #dcc296; display: inline-block; padding: 30px; border-radius: 15px; border: 2px solid #5d4037; box-shadow: 0 0 40px #000; }
-        .container { position: relative; display: inline-block; margin: 20px 0; }
-        #wheel { border: 10px solid #3e2723; border-radius: 50%; background: #4e342e; display: block; }
-        .idle-spin { animation: slow-spin 30s linear infinite; }
+        :root {
+            --gold: #ffcc00;
+            --dark-gold: #b8860b;
+            --wood: #3e2723;
+            --parchment: #dcc296;
+        }
+
+        body { 
+            background: radial-gradient(circle, #2c1a12 0%, #000000 100%); 
+            color: #f2e3c9; 
+            font-family: 'Metamorphous', serif; 
+            text-align: center; 
+            padding: 20px;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Fő konténer Shakes & Fidget stílusban */
+        .main-container { 
+            background: var(--parchment); 
+            display: inline-block; 
+            padding: 40px; 
+            border-radius: 25px; 
+            border: 8px solid var(--wood); 
+            box-shadow: 0 0 50px rgba(0,0,0,0.9), inset 0 0 20px rgba(0,0,0,0.3);
+            position: relative;
+            margin-top: 50px;
+        }
+
+        /* Arany keret dekoráció */
+        .main-container::before {
+            content: '';
+            position: absolute;
+            top: -12px; left: -12px; right: -12px; bottom: -12px;
+            border: 4px solid var(--gold);
+            border-radius: 30px;
+            pointer-events: none;
+        }
+
+        h2 { 
+            color: #3e2723; 
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
+            margin-bottom: 20px;
+        }
+
+        .container { position: relative; display: inline-block; margin: 30px 0; }
+
+        #wheel { 
+            border: 15px solid #2a1b15; 
+            border-radius: 50%; 
+            background: #4e342e; 
+            display: block; 
+            box-shadow: 0 0 30px rgba(0,0,0,0.6);
+            transition: transform 5s cubic-bezier(0.15, 0, 0.15, 1);
+        }
+
+        /* Alap forgás */
+        .idle-spin { animation: slow-spin 60s linear infinite; }
         @keyframes slow-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .spinning { transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1); }
-        .pointer { position: absolute; top: 50%; right: -25px; transform: translateY(-50%); width: 0; height: 0; border-top: 20px solid transparent; border-bottom: 20px solid transparent; border-right: 45px solid #d4af37; z-index: 10; }
-        input { padding: 12px; width: 220px; text-align: center; font-size: 16px; border-radius: 8px; border: 2px solid #5d4037; background: #fdf5e6; }
-        button { background: linear-gradient(to bottom, #8b5a2b, #4e342e); border: 2px solid #d4af37; color: #f2e3c9; padding: 12px 30px; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 8px; margin-top: 15px; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-        #customModal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); }
-        .modal-content { background: #dcc296; margin: 15% auto; padding: 25px; border: 4px solid #5d4037; width: 280px; border-radius: 15px; color: #3e2723; box-shadow: 0 0 20px #000; }
+
+        /* A Nyíl (Pointer) - most felülre raktam, mint az igazi kerekeknél */
+        .pointer { 
+            position: absolute; 
+            top: -20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 0; height: 0; 
+            border-left: 25px solid transparent; 
+            border-right: 25px solid transparent; 
+            border-top: 50px solid var(--gold); 
+            z-index: 10;
+            filter: drop-shadow(0 5px 5px black);
+        }
+
+        input { 
+            padding: 15px; 
+            width: 250px; 
+            text-align: center; 
+            font-size: 18px; 
+            border-radius: 12px; 
+            border: 3px solid var(--wood); 
+            background: #fdf5e6; 
+            font-family: 'Metamorphous', serif;
+            outline: none;
+        }
+
+        /* S&F Stílusú Gomb */
+        button { 
+            background: linear-gradient(to bottom, #bf8b2e 0%, #8b5a2b 100%); 
+            border: 3px solid var(--wood); 
+            border-bottom: 6px solid #2a1b15;
+            color: #fff; 
+            padding: 15px 45px; 
+            font-size: 22px; 
+            font-family: 'Metamorphous', serif;
+            cursor: pointer; 
+            border-radius: 15px; 
+            margin-top: 20px;
+            text-shadow: 2px 2px 2px rgba(0,0,0,0.8);
+            transition: all 0.1s;
+        }
+
+        button:active { 
+            transform: translateY(4px); 
+            border-bottom-width: 2px;
+        }
+
+        button:disabled { filter: grayscale(1); opacity: 0.7; cursor: not-allowed; }
+
+        /* Modal / Nyeremény ablak */
+        #customModal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(5px); }
+        .modal-content { 
+            background: var(--parchment); 
+            margin: 10% auto; 
+            padding: 40px; 
+            border: 10px solid var(--wood); 
+            width: 320px; 
+            border-radius: 30px; 
+            color: #3e2723; 
+            box-shadow: 0 0 50px var(--gold);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Nyeremény villanás effekt */
+        .win-flash {
+            animation: flash 0.5s ease-out;
+        }
+        @keyframes flash {
+            0% { filter: brightness(1); }
+            50% { filter: brightness(3) white; }
+            100% { filter: brightness(1); }
+        }
     </style>
 </head>
 <body>
 
     <div class="main-container">
-        <h2 style="margin:0; color:#3e2723;">Szerencsekerék</h2>
-        <input type="text" id="username" placeholder="Discord neved..." autocomplete="off"><br>
+        <h2>Szerencsekerék</h2>
+        <input type="text" id="username" placeholder="Hős neve..." autocomplete="off"><br>
         
-        <div class="container">
+        <div class="container" id="wheelWrapper">
             <div class="pointer"></div> 
-            <canvas id="wheel" class="idle-spin" width="380" height="380"></canvas>
+            <canvas id="wheel" class="idle-spin" width="400" height="400"></canvas>
         </div><br>
         
         <button id="spinBtn" onclick="spinWheel()">PÖRGETÉS</button>
@@ -35,16 +162,17 @@
 
     <div id="customModal">
         <div class="modal-content">
-            <h3 style="margin-top:0;">Gratulálunk!</h3>
+            <h2 style="margin-top:0;">Dicsőség!</h2>
             <p>A mai jutalmad:</p>
-            <p id="prizeText" style="font-size: 24px; font-weight: bold; color: #8b0000; margin: 10px 0;"></p>
-            <button onclick="location.reload()" style="padding:10px 20px; cursor:pointer; font-weight:bold;">RENDBEN</button>
+            <p id="prizeText" style="font-size: 32px; font-weight: bold; color: #8b0000; margin: 20px 0; text-shadow: 1px 1px 0 #fff;"></p>
+            <button onclick="location.reload()">ELFOGADOM</button>
         </div>
     </div>
 
     <iframe name="hidden_iframe" style="display:none;"></iframe>
 
     <script>
+        // Az adatok változatlanok maradtak
         const prizes = ["5 Gomba", "1000 Arany", "Balszerencse", "10 Gomba", "Új Rang", "Egy sör", "Drágakő", "Fegyver"];
         const colors = ["#5d4037", "#8b5a2b", "#3e2723", "#d4af37", "#5d4037", "#8b0000", "#3e2723", "#a67b5b"];
         const webhookURL = "https://discord.com/api/webhooks/1477720960827130159/k3Pi8AiXOpDuUAJi4FJhNr6KtBANTbDV9-nzarCXVYB9dnGwtxu9E9zy15uJNgzcPdJP";
@@ -54,32 +182,47 @@
 
         function drawWheel() {
             const arc = (2 * Math.PI) / prizes.length;
+            ctx.clearRect(0,0,400,400);
             for (let i = 0; i < prizes.length; i++) {
-                ctx.beginPath(); ctx.fillStyle = colors[i]; ctx.moveTo(190, 190);
-                ctx.arc(190, 190, 190, i * arc, (i + 1) * arc); ctx.fill();
-                ctx.save(); ctx.fillStyle = "#fff"; ctx.font = "bold 13px serif";
-                ctx.textAlign = "right"; ctx.translate(190, 190);
-                ctx.rotate(i * arc + arc / 2); ctx.fillText(prizes[i], 180, 5);
+                ctx.beginPath(); 
+                ctx.fillStyle = colors[i]; 
+                ctx.moveTo(200, 200);
+                ctx.arc(200, 200, 200, i * arc, (i + 1) * arc); 
+                ctx.fill();
+                
+                // Szelet választó vonalak
+                ctx.strokeStyle = "rgba(0,0,0,0.3)";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.save(); 
+                ctx.fillStyle = "#fff"; 
+                ctx.font = "bold 15px 'Metamorphous'";
+                ctx.shadowColor = "black";
+                ctx.shadowBlur = 4;
+                ctx.textAlign = "right"; 
+                ctx.translate(200, 200);
+                ctx.rotate(i * arc + arc / 2); 
+                ctx.fillText(prizes[i], 180, 5);
                 ctx.restore();
             }
         }
 
         function spinWheel() {
-            const user = document.getElementById("username").value.trim().toLowerCase();
+            const user = document.getElementById("username").value.trim();
             if (!user) return alert("Hősöm, add meg a neved!");
 
-            // --- NAPI ELLENŐRZÉS START ---
             const today = new Date().toDateString();
-            const lastSpin = localStorage.getItem("lastSpin_" + user);
+            const lastSpin = localStorage.getItem("lastSpin_" + user.toLowerCase());
 
             if (lastSpin === today) {
                 return alert("Vitéz! Ma már próbáltál szerencsét, gyere vissza holnap!");
             }
-            // --- NAPI ELLENŐRZÉS END ---
 
             const btn = document.getElementById("spinBtn");
             btn.disabled = true;
 
+            // Jelenlegi pozíció kiszámítása a folyamatos átmenethez
             const style = window.getComputedStyle(canvas);
             const matrix = new WebKitCSSMatrix(style.transform);
             const currentRotation = Math.round(Math.atan2(matrix.b, matrix.a) * (180/Math.PI));
@@ -88,19 +231,21 @@
             canvas.style.transform = `rotate(${currentRotation}deg)`;
 
             setTimeout(() => {
-                canvas.classList.add("spinning");
                 const extraSpin = 3600 + Math.floor(Math.random() * 360);
                 const finalRotation = currentRotation + extraSpin;
                 canvas.style.transform = `rotate(${finalRotation}deg)`;
 
                 setTimeout(() => {
-                    const actualStopAngle = finalRotation % 360;
+                    // Mivel a nyíl fent van (270 foknál), korrigálni kell a számítást
+                    const actualStopAngle = (finalRotation + 90) % 360; 
                     const normalizedAngle = (360 - (actualStopAngle < 0 ? actualStopAngle + 360 : actualStopAngle)) % 360;
                     const idx = Math.floor(normalizedAngle / (360 / prizes.length));
                     const win = prizes[idx];
                     
-                    // Mentés a böngészőbe
-                    localStorage.setItem("lastSpin_" + user, today);
+                    // Effekt: villanás a keréken
+                    document.getElementById("wheelWrapper").classList.add("win-flash");
+
+                    localStorage.setItem("lastSpin_" + user.toLowerCase(), today);
 
                     sendToGoogle(user + " - " + win);
                     sendToDiscord(user, win);
@@ -108,7 +253,7 @@
                     setTimeout(() => {
                         document.getElementById("prizeText").innerText = win;
                         document.getElementById("customModal").style.display = "block";
-                    }, 800);
+                    }, 1000);
 
                 }, 5000);
             }, 50);
@@ -127,12 +272,13 @@
             const params = {
                 username: "Szerencsekerék Őre",
                 embeds: [{
-                    title: "🎉 Új Nyeremény!",
-                    color: 13401651,
+                    title: "🎉 Új Nyeremény a Fogadóban!",
+                    color: 16763904,
                     fields: [
-                        { name: "Hős neve:", value: user, inline: true },
-                        { name: "Nyeremény:", value: prize, inline: true }
+                        { name: "Hős neve:", value: "🛡️ " + user, inline: true },
+                        { name: "Jutalom:", value: "🎁 " + prize, inline: true }
                     ],
+                    footer: { text: "Shakes & Fidget stílusú sorsolás" },
                     timestamp: new Date()
                 }]
             };
