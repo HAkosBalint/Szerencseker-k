@@ -155,16 +155,21 @@
             }, 5000);
         }
 
-        function sendToDiscord(user, prize) {
-            const webhookURL = "https://discord.com/api/webhooks/1477699408836558911/bbEnuI5QRGdLz8InshqUvWHfRYN3HL7WkY6m1yfGKOUhOQB2iT1eTMGj7wjO60q-_bSR";
-            fetch(webhookURL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    content: `🎰 **${user}** pörgetett és nyert: **${prize}**!`
-                })
-            });
-        }
+function sendToDiscord(user, prize) {
+    const webhookURL = "https://discord.com/api/webhooks/1477699408836558911/bbEnuI5QRGdLz8InshqUvWHfRYN3HL7WkY6m1yfGKOUhOQB2iT1eTMGj7wjO60q-_bSR"; 
+    
+    fetch(webhookURL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            content: `🎰 **${user}** pörgetett és nyert: **${prize}**!`
+        })
+    }).then(response => {
+        console.log("Discord üzenet elküldve!");
+    }).catch(error => {
+        console.error("Hiba történt:", error);
+    });
+}
 
         // Betöltéskor rajzolás
         window.onload = drawWheel;
