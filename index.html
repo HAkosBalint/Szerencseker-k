@@ -4,119 +4,148 @@
     <meta charset="UTF-8">
     <title>Szerencsekerék - Discord</title>
     <style>
-        /* Sötét fa háttér az egész oldalnak */
+        /* Sötét fa háttér textúrával */
         body { 
-            background: #1a0f0a url('https://www.transparenttextures.com/patterns/dark-wood.png'); 
+            background: #1a0f0a;
+            background-image: repeating-linear-gradient(90deg, #1a0f0a, #1a0f0a 40px, #251610 41px, #1a0f0a 42px);
             color: #f2e3c9; font-family: 'Times New Roman', serif; text-align: center; margin: 0; padding: 20px;
         }
 
-        /* A kerék mögötti rész: egy tiszta, elegáns pergamen */
+        /* Rongyos szélű pergamen CSS-sel rajzolva a stabilitásért */
         .main-container {
-            background: #dcc296 url('https://i.imgur.com/8S9p38n.png') no-repeat center center;
-            background-size: 100% 100%;
+            background: #dcc296;
             display: inline-block;
-            padding: 80px 100px;
+            padding: 60px 80px;
             position: relative;
-            min-width: 550px;
+            min-width: 500px;
             color: #3e2723;
-            filter: drop-shadow(0 0 30px rgba(0,0,0,0.9));
+            box-shadow: 0 0 50px rgba(0,0,0,0.9);
+            /* Szakadozott szél effekt */
+            clip-path: polygon(
+                0% 5%, 10% 0%, 25% 4%, 40% 0%, 60% 3%, 80% 0%, 95% 5%, 100% 20%, 
+                97% 40%, 100% 60%, 96% 80%, 100% 100%, 80% 95%, 60% 100%, 
+                40% 96%, 20% 100%, 0% 95%, 4% 75%, 0% 50%, 5% 25%
+            );
         }
 
         .container { position: relative; display: inline-block; margin: 20px 0; }
         
-        /* Fa kerék stílus */
+        /* RÉGIESÍTETT, "SZÉTSZEDETT" KERÉK STÍLUS */
         canvas { 
-            border: 12px solid #3e2723; border-radius: 50%; background: #4e342e;
-            animation: slow-spin 40s linear infinite;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            border: 15px solid #2e1a12; /* Sötétebb, vastagabb fa keret */
+            border-radius: 50%; 
+            background: #3e2723;
+            animation: slow-spin 50s linear infinite;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6);
+            /* Egy kis "ütött-kopott" hatás szűrővel */
+            filter: sepia(0.2) contrast(1.1);
         }
 
         @keyframes slow-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .spinning-active { animation: none !important; transition: transform 5s cubic-bezier(0.1, 0, 0.15, 1) !important; }
+        .spinning-active { animation: none !important; transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1) !important; }
 
+        /* Aranyozott nyíl */
         .pointer {
-            position: absolute; top: 50%; right: -35px; transform: translateY(-50%);
+            position: absolute; top: 50%; right: -30px; transform: translateY(-50%);
             width: 0; height: 0; border-top: 25px solid transparent; border-bottom: 25px solid transparent; 
-            border-right: 50px solid #d4af37; z-index: 10;
+            border-right: 50px solid #b8860b; z-index: 10;
+            filter: drop-shadow(-2px 2px 2px rgba(0,0,0,0.5));
         }
 
-        /* Gomb és beviteli mező stílus */
+        /* Gombok és beviteli mező */
         button { 
-            background: linear-gradient(to bottom, #8b5a2b 0%, #4e342e 100%); border: 3px solid #d4af37; 
-            color: #f2e3c9; padding: 12px 40px; font-size: 22px; font-weight: bold; cursor: pointer; 
-            border-radius: 5px; text-shadow: 2px 2px 2px #000; box-shadow: 0 4px 0 #2e1a12;
-            margin-top: 15px;
+            background: linear-gradient(to bottom, #5d4037 0%, #2e1a12 100%); border: 2px solid #b8860b; 
+            color: #f2e3c9; padding: 12px 45px; font-size: 20px; font-weight: bold; cursor: pointer; 
+            border-radius: 3px; text-shadow: 1px 1px 2px #000; box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            margin-top: 15px; text-transform: uppercase;
         }
-        button:disabled { filter: grayscale(1); }
+        button:hover { background: #4e342e; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
 
         input { 
-            background: rgba(255, 255, 255, 0.6); border: 2px solid #5d4037; 
-            padding: 10px; font-size: 18px; width: 280px; margin-bottom: 10px; 
-            text-align: center; font-weight: bold;
+            background: rgba(0, 0, 0, 0.05); border: none; border-bottom: 2px solid #5d4037;
+            padding: 10px; font-size: 18px; width: 280px; margin-bottom: 15px; 
+            text-align: center; font-family: 'Times New Roman', serif; font-style: italic;
         }
         
-        #prizeModal { display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
-        .modal-content { background: #dcc296; margin: 15% auto; padding: 40px; border: 8px solid #5d4037; width: 300px; text-align: center; border-radius: 10px; }
+        #prizeModal { display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); }
+        .modal-content { background: #dcc296; margin: 15% auto; padding: 40px; border: 10px double #3e2723; width: 320px; text-align: center; border-radius: 5px; box-shadow: 0 0 50px #000; }
     </style>
 </head>
 <body>
 
     <div class="main-container">
-        <h1 style="font-variant: small-caps; margin: 0;">Szerencsekerék</h1>
-        <p style="margin-bottom: 5px;">Írd be a Discord neved!</p>
+        <h1 style="margin: 0; letter-spacing: 3px;">Szerencsekerék</h1>
+        <p style="margin: 10px 0;">Írd be a Discord neved!</p>
         <input type="text" id="username" placeholder="Discord név..." autocomplete="off"><br>
         
         <div class="container">
             <div class="pointer"></div> 
-            <canvas id="wheel" width="460" height="460"></canvas>
+            <canvas id="wheel" width="450" height="450"></canvas>
         </div><br>
         
-        <button id="spinBtn" onclick="spinWheel()">PÖRGETÉS</button>
+        <button id="spinBtn" onclick="spinWheel()">A sors megkísértése</button>
     </div>
 
     <div id="prizeModal">
         <div class="modal-content">
-            <h2 style="color:#5d4037">Gratulálunk!</h2>
-            <p id="modalPrizeText" style="font-size: 28px; font-weight: bold; color: #8b0000;"></p>
-            <button onclick="closeModal()">RENDBEN</button>
+            <h2 style="color:#3e2723; margin-top:0;">A jussod:</h2>
+            <p id="modalPrizeText" style="font-size: 32px; font-weight: bold; color: #8b0000; text-shadow: 1px 1px 1px #000;"></p>
+            <button onclick="closeModal()">Átveszem</button>
         </div>
     </div>
 
     <script>
+        // A nyeremények listája
         const prizes = ["5 Gomba", "1000 Arany", "Balszerencse", "10 Gomba", "Új Rang", "Egy sör", "Drágakő", "Fegyver"];
-        const colors = ["#5d4037", "#8b5a2b", "#3e2723", "#d4af37", "#5d4037", "#8b0000", "#3e2723", "#a67b5b"];
+        // Rusztikus, fakóbb színek
+        const colors = ["#4e342e", "#704214", "#2b1b17", "#966f33", "#5c4033", "#800000", "#3b2f2f", "#8b5a2b"];
         const canvas = document.getElementById("wheel");
         const ctx = canvas.getContext("2d");
 
         function drawWheel() {
             const arc = (2 * Math.PI) / prizes.length;
+            ctx.clearRect(0,0,450,450);
+
             for (let i = 0; i < prizes.length; i++) {
                 ctx.beginPath();
                 ctx.fillStyle = colors[i];
-                ctx.moveTo(230, 230);
-                ctx.arc(230, 230, 230, i * arc, (i + 1) * arc);
+                ctx.moveTo(225, 225);
+                ctx.arc(225, 225, 225, i * arc, (i + 1) * arc);
                 ctx.fill();
                 
-                // Deszka textúra
+                // Erősebb választóvonalak a "szétszedett" hatáshoz
                 ctx.save();
-                ctx.strokeStyle = "rgba(0,0,0,0.2)";
-                ctx.lineWidth = 2;
-                ctx.translate(230, 230);
+                ctx.strokeStyle = "#1a0f0a";
+                ctx.lineWidth = 4;
+                ctx.translate(225, 225);
                 ctx.rotate(i * arc);
                 ctx.beginPath();
-                ctx.moveTo(0,0); ctx.lineTo(230,0);
+                ctx.moveTo(0,0); ctx.lineTo(225,0);
                 ctx.stroke();
                 ctx.restore();
 
+                // Szöveg rajzolása
                 ctx.save();
-                ctx.fillStyle = "#fff";
-                ctx.font = "bold 16px serif";
+                ctx.fillStyle = "#f2e3c9";
+                ctx.font = "bold 18px 'Times New Roman'";
                 ctx.textAlign = "right";
-                ctx.translate(230, 230);
+                ctx.shadowColor = "black";
+                ctx.shadowBlur = 4;
+                ctx.translate(225, 225);
                 ctx.rotate(i * arc + arc / 2);
-                ctx.fillText(prizes[i], 215, 5);
+                ctx.fillText(prizes[i], 210, 8);
                 ctx.restore();
             }
+            
+            // Középső "tengely" rajzolása
+            ctx.beginPath();
+            ctx.fillStyle = "#2e1a12";
+            ctx.arc(225, 225, 15, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.strokeStyle = "#b8860b";
+            ctx.lineWidth = 3;
+            ctx.stroke();
         }
 
         function spinWheel() {
