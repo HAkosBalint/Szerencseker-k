@@ -11,6 +11,7 @@
             text-align: center; 
             margin: 0;
             padding: 20px;
+            overflow-x: hidden;
         }
         .container { 
             margin-top: 50px; 
@@ -71,9 +72,53 @@
             width: 250px; 
             font-size: 16px;
         }
+
+        /* --- MODAL STÍLUSOK --- */
+        #prizeModal {
+            display: none; 
+            position: fixed; 
+            z-index: 100; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #3e2723; 
+            color: #f2e3c9; 
+            margin: 10% auto; 
+            padding: 40px; 
+            border: 4px solid #d4af37; 
+            width: 320px; 
+            border-radius: 20px; 
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.5); 
+            text-align: center;
+            position: relative;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-content h2 { color: #d4af37; margin-top: 0; font-size: 28px; }
+        .modal-content p { font-size: 24px; font-weight: bold; margin: 20px 0; }
+        .close-btn { width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
+
+    <div id="prizeModal">
+        <div class="modal-content">
+            <h2>Gratulálok!</h2>
+            <p id="modalPrizeText"></p>
+            <button class="close-btn" onclick="closeModal()">RENDBEN</button>
+        </div>
+    </div>
 
     <h1>🎡 BeGombázók kereke</h1>
     <p>Vitéz! Írd be a neved, és pörgess a napi jutalmadért!</p>
@@ -87,7 +132,7 @@
 
     <br>
     <button id="spinBtn" onclick="spinWheel()">PÖRGETÉS</button>
-    <p id="result" style="font-size: 24px; font-weight: bold; margin-top: 20px;"></p>
+    <p id="result" style="display: none;"></p>
 
     <script>
         const prizes = ["🍄 5 Gomba", "💰 1000 Arany", "💀 Balszerencse", "🍄 10 Gomba", "🛡️ Új Rang", "🍻 Egy sör", "💎 Drágakő", "⚔️ Fegyver"];
@@ -127,18 +172,14 @@
         }
 
         function spinWheel() {
-            const user = document.getElementById("username").value;
+            const user = document.getElementById("username").value.trim();
             if (!user) return alert("Add meg a neved, vitéz!");
-            // Ha a név 'teszt', akkor nem nézi a napi korlátot
+
+            // Napi korlát és 'teszt' kiskapu
             if (user.toLowerCase() !== "teszt") {
                 if (localStorage.getItem("lastSpin") === new Date().toDateString()) {
                     return alert("Ma már pörgettél! Gyere vissza holnap.");
                 }
-            }
-            // ------------------------
-
-            if (localStorage.getItem("lastSpin") === new Date().toDateString()) {
-                return alert("Ma már pörgettél! Gyere vissza holnap.");
             }
 
             const spinBtn = document.getElementById("spinBtn");
@@ -150,35 +191,43 @@
 
             setTimeout(() => {
                 const actualDeg = currentRotation % 360;
-                // A mutató jobbra van (0 fok), de a logikánk szerint korrigálni kell
                 const prizeIndex = Math.floor(((360 - (actualDeg % 360)) / (360 / prizes.length))) % prizes.length;
                 const winnerPrize = prizes[prizeIndex];
                 
-                document.getElementById("result").innerText = "Nyereményed: " + winnerPrize;
-                localStorage.setItem("lastSpin", new Date().toDateString());
+                // --- MODAL MEGJELENÍTÉSE ---
+                document.getElementById("modalPrizeText").innerText = winnerPrize;
+                document.getElementById("prizeModal").style.display = "block";
+                
+                // Adat mentése (csak ha nem teszt)
+                if (user.toLowerCase() !== "teszt") {
+                    localStorage.setItem("lastSpin", new Date().toDateString());
+                }
                 
                 sendToDiscord(user, winnerPrize);
                 spinBtn.disabled = false;
             }, 5000);
         }
 
-function sendToDiscord(user, prize) {
-    const webhookURL = "https://discord.com/api/webhooks/1477720960827130159/k3Pi8AiXOpDuUAJi4FJhNr6KtBANTbDV9-nzarCXVYB9dnGwtxu9E9zy15uJNgzcPdJP"; 
-    
-    fetch(webhookURL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            content: `🎡 **${user}** pörgetett és nyert: **${prize}**!`
-        })
-    }).then(response => {
-        console.log("Discord üzenet elküldve!");
-    }).catch(error => {
-        console.error("Hiba történt:", error);
-    });
-}
+        function closeModal() {
+            document.getElementById("prizeModal").style.display = "none";
+        }
 
-        // Betöltéskor rajzolás
+        function sendToDiscord(user, prize) {
+            const webhookURL = "https://discord.com/api/webhooks/1477720960827130159/k3Pi8AiXOpDuUAJi4FJhNr6KtBANTbDV9-nzarCXVYB9dnGwtxu9E9zy15uJNgzcPdJP"; 
+            
+            fetch(webhookURL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: `🎰 **${user}** pörgetett és nyert: **${prize}**!`
+                })
+            }).then(response => {
+                console.log("Discord üzenet elküldve!");
+            }).catch(error => {
+                console.error("Hiba történt:", error);
+            });
+        }
+
         window.onload = drawWheel;
     </script>
 </body>
