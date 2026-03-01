@@ -2,72 +2,100 @@
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
-    <title>Szerencsekerék</title>
+    <title>Abul-Akbar Szerencsekereke</title>
     <style>
         body { 
             background: #1a0f0a url('https://www.transparenttextures.com/patterns/dark-wood.png'); 
             color: #f2e3c9; font-family: 'Times New Roman', serif; text-align: center; margin: 0; padding: 20px;
         }
 
-        /* Szakadt, égetett szélű pergamen hatás */
+        /* Szakadt pergamen háttér az általad küldött kép alapján */
         .main-container {
-            background: #dcc296 url('https://www.transparenttextures.com/patterns/beige-paper.png');
-            border: 5px solid #3e2723;
-            border-radius: 2px;
+            background: url('https://i.imgur.com/8S9p38n.png') no-repeat center center; /* Itt az általad küldött pergamen képe */
+            background-size: 100% 100%;
             display: inline-block;
-            padding: 40px;
+            padding: 60px 80px;
             position: relative;
-            box-shadow: 0 0 50px rgba(0,0,0,0.9), inset 0 0 100px rgba(93, 64, 55, 0.3);
+            min-width: 550px;
             color: #3e2723;
-            /* Égetett szél szimulálása */
-            clip-path: polygon(2% 0%, 98% 1%, 100% 4%, 99% 95%, 97% 100%, 3% 99%, 0% 96%, 1% 5%);
+            filter: drop-shadow(0 0 30px rgba(0,0,0,0.8));
+        }
+
+        /* Ha a fenti link nem működne, ez a fallback megoldás a szakadt szélre */
+        .fallback-parchment {
+            background: #dcc296 url('https://www.transparenttextures.com/patterns/beige-paper.png');
+            clip-path: polygon(2% 2%, 97% 1%, 100% 5%, 98% 95%, 95% 99%, 4% 98%, 0% 94%, 1% 6%);
+            border: 2px solid #5d4037;
         }
 
         .container { position: relative; display: inline-block; margin: 20px 0; }
         
         canvas { 
-            border: 15px solid #3e2723; border-radius: 50%; background: #4e342e;
+            border: 12px solid #3e2723; border-radius: 50%; background: #4e342e;
             animation: slow-spin 40s linear infinite;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            display: block;
         }
 
-        @keyframes slow-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .spinning { animation: none !important; transition: transform 5s cubic-bezier(0.1, 0, 0.2, 1) !important; }
+        @keyframes slow-spin { 
+            from { transform: rotate(0deg); } 
+            to { transform: rotate(360deg); } 
+        }
+
+        /* Pörgetés alatti osztály - kikapcsolja az alap forgást */
+        .spinning-active { 
+            animation: none !important; 
+            transition: transform 5s cubic-bezier(0.1, 0, 0.2, 1) !important; 
+        }
 
         .pointer {
-            position: absolute; top: 50%; right: -30px; transform: translateY(-50%);
-            width: 0; height: 0; border-top: 25px solid transparent; border-bottom: 25px solid transparent; 
-            border-right: 50px solid #d4af37; z-index: 10;
+            position: absolute; top: 50%; right: -25px; transform: translateY(-50%);
+            width: 0; height: 0; border-top: 20px solid transparent; border-bottom: 20px solid transparent; 
+            border-right: 45px solid #d4af37; z-index: 10;
+            filter: drop-shadow(-2px 2px 2px rgba(0,0,0,0.5));
         }
 
         button { 
             background: linear-gradient(to bottom, #8b5a2b 0%, #4e342e 100%); border: 3px solid #d4af37; 
             color: #f2e3c9; padding: 15px 45px; font-size: 24px; font-weight: bold; cursor: pointer; 
             border-radius: 5px; text-shadow: 2px 2px 2px #000; box-shadow: 0 5px 0 #2e1a12;
+            margin-top: 10px;
         }
+        button:active { transform: translateY(3px); box-shadow: 0 2px 0 #2e1a12; }
+        button:disabled { filter: grayscale(1); cursor: not-allowed; }
 
-        input { background: #fdf5e6; border: 2px solid #5d4037; padding: 12px; font-size: 18px; width: 300px; margin-bottom: 10px; }
+        input { 
+            background: rgba(253, 245, 230, 0.8); border: 2px solid #5d4037; 
+            padding: 12px; font-size: 18px; width: 280px; margin-bottom: 10px;
+            font-family: 'Times New Roman', serif;
+        }
         
         #prizeModal { display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
-        .modal-content { background: #dcc296; margin: 15% auto; padding: 40px; border: 8px solid #5d4037; width: 320px; text-align: center; }
+        .modal-content { 
+            background: #dcc296 url('https://www.transparenttextures.com/patterns/beige-paper.png'); 
+            margin: 15% auto; padding: 40px; border: 8px solid #5d4037; width: 320px; text-align: center;
+            border-radius: 10px; box-shadow: 0 0 50px #000;
+        }
     </style>
 </head>
 <body>
 
     <div class="main-container">
-        <h1 style="font-variant: small-caps;">🎡 Szerencsekerék</h1>
-        <input type="text" id="username" placeholder="Discord neved..." autocomplete="off"><br>
+        <h1 style="font-variant: small-caps; margin-top: 0;">🎡 Szerencsekerék</h1>
+        <input type="text" id="username" placeholder="Hős neve..." autocomplete="off"><br>
+        
         <div class="container">
             <div class="pointer"></div> 
             <canvas id="wheel" width="480" height="480"></canvas>
         </div><br>
+        
         <button id="spinBtn" onclick="spinWheel()">PÖRGETÉS</button>
     </div>
 
     <div id="prizeModal">
         <div class="modal-content">
-            <h2 style="color:#5d4037">Gratulálok!</h2>
-            <p id="modalPrizeText" style="font-size: 28px; font-weight: bold; color: #8b0000;"></p>
+            <h2 style="color:#5d4037">Gratulálok, vitéz!</h2>
+            <p id="modalPrizeText" style="font-size: 32px; font-weight: bold; color: #8b0000; margin: 20px 0;"></p>
             <button onclick="closeModal()">RENDBEN</button>
         </div>
     </div>
@@ -77,17 +105,6 @@
         const colors = ["#5d4037", "#8b5a2b", "#3e2723", "#d4af37", "#5d4037", "#8b0000", "#3e2723", "#a67b5b"];
         const canvas = document.getElementById("wheel");
         const ctx = canvas.getContext("2d");
-        let lastPrizeIndex = -1;
-
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playClick() {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.setValueAtTime(450, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-        }
 
         function drawWheel() {
             const arc = (2 * Math.PI) / prizes.length;
@@ -101,45 +118,62 @@
                 ctx.arc(centerX, centerY, 240, i * arc, (i + 1) * arc);
                 ctx.fill();
 
-                // Törött deszka hatás (vonalak)
+                // Törött deszka textúra
                 ctx.save();
-                ctx.strokeStyle = "#2e1a12";
-                ctx.lineWidth = 3;
+                ctx.strokeStyle = "rgba(46, 26, 18, 0.5)";
+                ctx.lineWidth = 2;
                 ctx.translate(centerX, centerY);
                 ctx.rotate(i * arc);
                 ctx.beginPath();
-                ctx.moveTo(0, 0);
-                for (let r = 20; r <= 240; r += 20) {
-                    ctx.lineTo(r, (Math.random() - 0.5) * 6);
+                for (let r = 40; r <= 230; r += 30) {
+                    ctx.moveTo(r, -5);
+                    ctx.lineTo(r + 5, 5);
                 }
                 ctx.stroke();
                 ctx.restore();
 
-                // Szöveg rajzolása
+                // Elválasztó vonalak
+                ctx.save();
+                ctx.strokeStyle = "#2e1a12";
+                ctx.lineWidth = 4;
+                ctx.translate(centerX, centerY);
+                ctx.rotate(i * arc);
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(240, 0);
+                ctx.stroke();
+                ctx.restore();
+
+                // Szöveg
                 ctx.save();
                 ctx.fillStyle = "#fff";
-                ctx.font = "bold 17px serif";
+                ctx.shadowBlur = 4;
+                ctx.shadowColor = "#000";
+                ctx.font = "bold 18px 'Times New Roman'";
                 ctx.textAlign = "right";
                 ctx.translate(centerX, centerY);
                 ctx.rotate(i * arc + arc / 2);
-                ctx.fillText(prizes[i], 220, 8);
+                ctx.fillText(prizes[i], 225, 6);
                 ctx.restore();
             }
 
-            // Díszes, régies közép
+            // Díszes fém közép
             ctx.beginPath();
             ctx.fillStyle = "#3e2723";
-            ctx.arc(centerX, centerY, 40, 0, 2 * Math.PI);
+            ctx.arc(centerX, centerY, 45, 0, 2 * Math.PI);
             ctx.fill();
             ctx.strokeStyle = "#d4af37";
-            ctx.lineWidth = 5;
+            ctx.lineWidth = 6;
             ctx.stroke();
-            
-            // Belső "csavar"
+
+            // Arany szegecs
             ctx.beginPath();
             ctx.fillStyle = "#d4af37";
-            ctx.arc(centerX, centerY, 15, 0, 2 * Math.PI);
+            ctx.arc(centerX, centerY, 18, 0, 2 * Math.PI);
             ctx.fill();
+            ctx.strokeStyle = "#8b5a2b";
+            ctx.lineWidth = 2;
+            ctx.stroke();
         }
 
         function spinWheel() {
@@ -148,14 +182,22 @@
             
             const spinBtn = document.getElementById("spinBtn");
             spinBtn.disabled = true;
+
+            // Logika a pörgetéshez
+            canvas.classList.add("spinning-active");
+            const extraDeg = Math.floor(Math.random() * 360) + 3600; 
             
-            canvas.classList.add("spinning");
-            const deg = Math.floor(Math.random() * 360) + 3600;
-            canvas.style.transform = `rotate(${deg}deg)`;
+            // Lekérjük a pillanatnyi szöget, hogy ne ugorjon a kerék
+            const style = window.getComputedStyle(canvas);
+            const matrix = new WebKitCSSMatrix(style.transform);
+            const currentAngle = Math.round(Math.atan2(matrix.b, matrix.a) * (180/Math.PI));
+            
+            const totalRotation = extraDeg + (currentAngle < 0 ? currentAngle + 360 : currentAngle);
+            canvas.style.transform = `rotate(${totalRotation}deg)`;
 
             setTimeout(() => {
-                const actualDeg = deg % 360;
-                const idx = Math.floor(((360 - actualDeg) / (360 / prizes.length))) % prizes.length;
+                const finalDeg = totalRotation % 360;
+                const idx = Math.floor(((360 - finalDeg) / (360 / prizes.length))) % prizes.length;
                 const win = prizes[idx];
                 
                 document.getElementById("modalPrizeText").innerText = win;
@@ -175,21 +217,21 @@
             const form = document.createElement("form");
             form.target = "hidden_frame"; form.method = "POST"; form.action = formURL;
             
-            // Fix ID-k
             const n = document.createElement("input"); n.type="hidden"; n.name = "entry.1569039722"; n.value = user; form.appendChild(n);
             const p = document.createElement("input"); p.type="hidden"; p.name = "entry.916111113"; p.value = prize; form.appendChild(p);
             
             document.body.appendChild(form);
             form.submit();
+            setTimeout(() => { document.body.removeChild(form); document.body.removeChild(iframe); }, 2000);
         }
 
         function closeModal() {
             document.getElementById("prizeModal").style.display = "none";
-            canvas.classList.remove("spinning");
-            canvas.style.transform = "rotate(0deg)";
+            // Fontos: nem nullázzuk a transformot, hanem hagyjuk ott, ahol megállt, 
+            // és levesszük az osztályt, hogy a slow-spin onnan folytassa
+            canvas.classList.remove("spinning-active");
         }
 
-        document.body.addEventListener('click', () => { if (audioCtx.state === 'suspended') audioCtx.resume(); }, { once: true });
         window.onload = drawWheel;
     </script>
 </body>
