@@ -109,9 +109,7 @@
                 
                 // Szöveg formázása és forgatása
                 ctx.fillStyle = "white";
-                ctx.font = "bold 10px Segoe UI";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
+                ctx.font = "bold 12px Segoe UI";
                 ctx.translate(225 + Math.cos(i * arc + arc / 2) * 160, 225 + Math.sin(i * arc + arc / 2) * 160);
                 ctx.rotate(i * arc + arc / 2);
                 ctx.fillText(prizes[i].split(" ")[1], 0, 0);
