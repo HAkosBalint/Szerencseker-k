@@ -5,35 +5,35 @@
     <title>Szerencsekerék - Discord</title>
     <style>
         body { 
-            background: #1a0f0a; 
-            color: #f2e3c9; font-family: 'Times New Roman', serif; text-align: center; padding: 20px;
+            background: #1a0f0a; color: #f2e3c9; 
+            font-family: 'Times New Roman', serif; text-align: center; padding: 20px;
         }
 
-        /* Sima szélű pergamen */
         .main-container {
-            background: #dcc296;
-            display: inline-block;
-            padding: 40px 60px;
-            border-radius: 10px;
-            color: #3e2723;
+            background: #dcc296; display: inline-block; padding: 40px 60px;
+            border-radius: 10px; color: #3e2723; border: 2px solid #5d4037;
             box-shadow: 0 0 50px rgba(0,0,0,0.9);
-            border: 1px solid #5d4037;
         }
 
         .container { position: relative; display: inline-block; margin: 20px 0; }
         
-        /* KERÉK STÍLUS ÉS ANIMÁCIÓ */
+        /* ALAPFORGÁS - külön div-en, hogy ne zavarja a pörgetést */
         #wheel { 
-            border: 12px solid #3e2723; 
-            border-radius: 50%; 
-            background: #4e342e;
-            /* Alap állapotban lassú forgás */
+            border: 12px solid #3e2723; border-radius: 50%; background: #4e342e;
+            display: block;
+        }
+
+        /* Ez az osztály felel az alap lassú forgásért */
+        .idle-animation {
             animation: slow-spin 30s linear infinite;
         }
 
-        @keyframes slow-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes slow-spin { 
+            from { transform: rotate(0deg); } 
+            to { transform: rotate(360deg); } 
+        }
 
-        /* Amikor pörgetünk, ezt az osztályt adjuk hozzá JS-ből */
+        /* Pörgetéskor ezt használjuk */
         .fast-spin {
             animation: none !important;
             transition: transform 5s cubic-bezier(0.15, 0, 0.1, 1) !important;
@@ -51,11 +51,11 @@
             font-size: 24px; font-weight: bold; cursor: pointer; border-radius: 8px;
             text-shadow: 2px 2px 2px #000; margin-top: 20px;
         }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        button:disabled { opacity: 0.6; }
 
         input { 
             padding: 12px; width: 280px; text-align: center; font-size: 18px; 
-            border: 2px solid #5d4037; border-radius: 5px; background: rgba(255,255,255,0.8);
+            border: 2px solid #5d4037; border-radius: 5px;
         }
     </style>
 </head>
@@ -67,7 +67,7 @@
         
         <div class="container">
             <div class="pointer"></div> 
-            <canvas id="wheel" width="450" height="450"></canvas>
+            <canvas id="wheel" class="idle-animation" width="450" height="450"></canvas>
         </div><br>
         
         <button id="spinBtn" onclick="spinWheel()">PÖRGETÉS!</button>
@@ -80,7 +80,6 @@
         const colors = ["#5d4037", "#8b5a2b", "#3e2723", "#d4af37", "#5d4037", "#8b0000", "#3e2723", "#a67b5b"];
         const canvas = document.getElementById("wheel");
         const ctx = canvas.getContext("2d");
-        let currentRotation = 0;
 
         function drawWheel() {
             const arc = (2 * Math.PI) / prizes.length;
@@ -96,44 +95,48 @@
 
         function spinWheel() {
             const user = document.getElementById("username").value.trim();
-            if (!user) return alert("Kérlek, add meg a neved!");
+            if (!user) return alert("Add meg a neved!");
 
             const today = new Date().toISOString().slice(0, 10);
             if (localStorage.getItem("spin_" + user.toLowerCase()) === today) {
-                return alert("Vitéz! Ma már próbáltad a szerencséd.");
+                return alert("Vitéz! Ma már pörgettél.");
             }
 
             const btn = document.getElementById("spinBtn");
             btn.disabled = true;
 
-            // 1. Elmentjük, hol állt a kerék az alapforgásban
+            // 1. MEGÁLLÍTJUK AZ ALAPFORGÁST OTT AHOL VAN
             const style = window.getComputedStyle(canvas);
             const matrix = new WebKitCSSMatrix(style.transform);
-            const startAngle = Math.round(Math.atan2(matrix.b, matrix.a) * (180/Math.PI));
+            const currentAngle = Math.round(Math.atan2(matrix.b, matrix.a) * (180/Math.PI));
             
-            // 2. Átváltunk pörgetés módba
-            canvas.classList.add("fast-spin");
-            const extraRotation = 3600 + Math.floor(Math.random() * 360);
-            currentRotation = startAngle + extraRotation;
-            canvas.style.transform = `rotate(${currentRotation}deg)`;
+            canvas.classList.remove("idle-animation");
+            canvas.style.transform = `rotate(${currentAngle}deg)`;
 
+            // 2. KIS SZÜNET UTÁN INDÍTJUK A PÖRGETÉST (hogy a böngésző észlelje a váltást)
             setTimeout(() => {
-                const finalAngle = currentRotation % 360;
-                // Kiszámítjuk melyik szeletnél állt meg (a pointer jobbra van, 0 foknál)
-                const idx = Math.floor(((360 - (finalAngle < 0 ? finalAngle + 360 : finalAngle)) / (360 / prizes.length))) % prizes.length;
-                const win = prizes[idx];
-                
-                alert("Gratulálunk! Nyereményed: " + win);
-                localStorage.setItem("spin_" + user.toLowerCase(), today);
-                
-                // ADATKÜLDÉS
-                sendToForm(user, win);
-                
-                // Visszaállítjuk a gombot, de a kerék marad ott ahol megállt
-                btn.disabled = false;
-                canvas.classList.remove("fast-spin");
-                canvas.style.transform = `rotate(${currentRotation % 360}deg)`;
-            }, 5000);
+                canvas.classList.add("fast-spin");
+                const randomExtra = Math.floor(Math.random() * 360);
+                const totalRotation = currentAngle + 3600 + randomExtra;
+                canvas.style.transform = `rotate(${totalRotation}deg)`;
+
+                setTimeout(() => {
+                    // 3. PONTOS KISZÁMÍTÁS (0 fok a pointer iránya)
+                    const finalDeg = totalRotation % 360;
+                    const sectionAngle = 360 / prizes.length;
+                    // Korrekció: a pointer 0 foknál van, a kerék rajzolása az óramutató járása szerint történik
+                    const correctedDeg = (360 - (finalDeg < 0 ? finalDeg + 360 : finalDeg)) % 360;
+                    const idx = Math.floor(correctedDeg / sectionAngle);
+                    const win = prizes[idx];
+                    
+                    alert("A nyereményed: " + win);
+                    localStorage.setItem("spin_" + user.toLowerCase(), today);
+                    
+                    // BEKÜLDÉS
+                    sendToForm(user, win);
+                    btn.disabled = false;
+                }, 5100);
+            }, 50);
         }
 
         function sendToForm(user, prize) {
@@ -141,15 +144,8 @@
             const form = document.createElement("form");
             form.target = "hidden_iframe"; form.method = "POST"; form.action = formURL;
             
-            // Discord név
-            const nameInput = document.createElement("input");
-            nameInput.type = "hidden"; nameInput.name = "entry.1569039722"; nameInput.value = user;
-            form.appendChild(nameInput);
-            
-            // Nyeremény
-            const prizeInput = document.createElement("input");
-            prizeInput.type = "hidden"; prizeInput.name = "entry.916111113"; prizeInput.value = prize;
-            form.appendChild(prizeInput);
+            const n = document.createElement("input"); n.type="hidden"; n.name="entry.1569039722"; n.value=user; form.appendChild(n);
+            const p = document.createElement("input"); p.type="hidden"; p.name="entry.916111113"; p.value=prize; form.appendChild(p);
             
             document.body.appendChild(form);
             form.submit();
