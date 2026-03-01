@@ -2,85 +2,47 @@
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
-    <title>Szerencsekerék - Discord</title>
+    <title>Szerencsekerék</title>
     <style>
-        body { 
-            background: #1a0f0a; color: #f2e3c9; 
-            font-family: 'Times New Roman', serif; text-align: center; padding: 20px;
-            overflow-x: hidden;
-        }
-
-        .main-container {
-            background: #dcc296; display: inline-block; padding: 40px 60px;
-            border-radius: 10px; color: #3e2723; border: 2px solid #5d4037;
-            box-shadow: 0 0 50px rgba(0,0,0,0.9);
-        }
-
-        .container { position: relative; display: inline-block; margin: 20px 0; }
+        body { background: #1a0f0a; color: #f2e3c9; font-family: 'Times New Roman', serif; text-align: center; }
+        .main-container { background: #dcc296; display: inline-block; padding: 40px; border-radius: 15px; border: 2px solid #5d4037; margin-top: 50px; box-shadow: 0 0 50px #000; }
+        .container { position: relative; display: inline-block; }
         
-        #wheel { 
-            border: 12px solid #3e2723; border-radius: 50%; background: #4e342e;
-            display: block; transition: transform 5s cubic-bezier(0.15, 0, 0.1, 1);
-        }
-
-        .idle-animation {
-            animation: slow-spin 30s linear infinite;
-        }
-
+        #wheel { border: 12px solid #3e2723; border-radius: 50%; display: block; }
+        /* Alap lassú forgás */
+        .idle-animation { animation: slow-spin 30s linear infinite; }
         @keyframes slow-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .pointer {
-            position: absolute; top: 50%; right: -30px; transform: translateY(-50%);
-            width: 0; height: 0; border-top: 25px solid transparent; border-bottom: 25px solid transparent; 
-            border-right: 55px solid #d4af37; z-index: 10;
-        }
+        .pointer { position: absolute; top: 50%; right: -30px; transform: translateY(-50%); width: 0; height: 0; 
+                   border-top: 25px solid transparent; border-bottom: 25px solid transparent; border-right: 55px solid #d4af37; z-index: 10; }
 
-        button { 
-            background: linear-gradient(to bottom, #8b5a2b 0%, #4e342e 100%); 
-            border: 3px solid #d4af37; color: #f2e3c9; padding: 15px 45px; 
-            font-size: 24px; font-weight: bold; cursor: pointer; border-radius: 8px;
-            text-shadow: 2px 2px 2px #000; margin-top: 20px;
-        }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        input { 
-            padding: 12px; width: 280px; text-align: center; font-size: 18px; 
-            border: 2px solid #5d4037; border-radius: 5px; background: rgba(255,255,255,0.7);
-        }
-
-        /* EGYEDI FELUGRÓ ABLAK (MODAL) STÍLUSA */
-        #customModal {
-            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
-            width: 100%; height: 100%; background-color: rgba(0,0,0,0.8);
-        }
-        .modal-content {
-            background: #dcc296; margin: 15% auto; padding: 30px;
-            border: 5px solid #5d4037; width: 350px; border-radius: 15px;
-            box-shadow: 0 0 30px #000; text-align: center; color: #3e2723;
-        }
-        .modal-btn { margin-top: 20px; padding: 10px 30px; font-size: 18px; }
+        button { background: linear-gradient(to bottom, #8b5a2b 0%, #4e342e 100%); border: 3px solid #d4af37; color: #f2e3c9; 
+                 padding: 15px 40px; font-size: 24px; font-weight: bold; cursor: pointer; border-radius: 8px; margin-top: 20px; }
+        
+        /* Modal ablak */
+        #customModal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
+        .modal-content { background: #dcc296; margin: 15% auto; padding: 30px; border: 5px solid #5d4037; width: 350px; border-radius: 15px; color: #3e2723; }
+        .prize-name { font-size: 2.5em; font-weight: bold; color: #8b0000; margin: 15px 0; }
     </style>
 </head>
 <body>
 
     <div class="main-container">
         <h1>Szerencsekerék</h1>
-        <input type="text" id="username" placeholder="Hős neve..." autocomplete="off"><br>
-        
+        <input type="text" id="username" placeholder="Hős neve..." style="padding:12px; text-align:center; width:250px; font-size:18px;"><br>
         <div class="container">
             <div class="pointer"></div> 
             <canvas id="wheel" class="idle-animation" width="450" height="450"></canvas>
         </div><br>
-        
-        <button id="spinBtn" onclick="spinWheel()">PÖRGETÉS!</button>
+        <button id="spinBtn" onclick="spinWheel()">PÖRGETÉS</button>
     </div>
 
     <div id="customModal">
         <div class="modal-content">
-            <h2 style="margin-top:0;">Gratulálunk!</h2>
-            <p style="font-size: 1.2em;">A nyereményed:</p>
-            <p id="prizeText" style="font-size: 2em; font-weight: bold; color: #8b0000; margin: 10px 0;"></p>
-            <button class="modal-btn" onclick="closeModal()">RENDBEN</button>
+            <h2>Gratulálunk!</h2>
+            <p>A sorsod mára:</p>
+            <div id="prizeText" class="prize-name"></div>
+            <button onclick="location.reload()" style="padding:10px 20px; cursor:pointer; font-weight:bold;">RENDBEN</button>
         </div>
     </div>
 
@@ -97,75 +59,53 @@
             for (let i = 0; i < prizes.length; i++) {
                 ctx.beginPath(); ctx.fillStyle = colors[i]; ctx.moveTo(225, 225);
                 ctx.arc(225, 225, 225, i * arc, (i + 1) * arc); ctx.fill();
-                ctx.save(); ctx.fillStyle = "#fff"; ctx.font = "bold 17px serif";
-                ctx.textAlign = "right"; ctx.translate(225, 225);
-                ctx.rotate(i * arc + arc / 2); ctx.fillText(prizes[i], 210, 6);
-                ctx.restore();
+                ctx.save(); ctx.fillStyle = "#fff"; ctx.font = "bold 16px serif"; ctx.textAlign = "right";
+                ctx.translate(225, 225); ctx.rotate(i * arc + arc / 2); ctx.fillText(prizes[i], 210, 5); ctx.restore();
             }
         }
 
         function spinWheel() {
             const user = document.getElementById("username").value.trim();
-            if (!user) return alert("Hősöm, írd be a neved!");
-
-            const today = new Date().toISOString().slice(0, 10);
-            if (localStorage.getItem("spin_" + user.toLowerCase()) === today) {
-                return alert("Vitéz! Ma már pörgettél.");
-            }
+            if (!user) return alert("Hősöm, add meg a neved!");
 
             const btn = document.getElementById("spinBtn");
             btn.disabled = true;
 
-            // 1. Alapforgás megállítása
-            const style = window.getComputedStyle(canvas);
-            const matrix = new WebKitCSSMatrix(style.transform);
-            const currentAngle = Math.round(Math.atan2(matrix.b, matrix.a) * (180/Math.PI));
-            
+            // Alapforgás megállítása, hogy ne rángasson
             canvas.classList.remove("idle-animation");
-            canvas.style.transform = `rotate(${currentAngle}deg)`;
+            
+            const randomRotation = 3600 + Math.floor(Math.random() * 360);
+            canvas.style.transition = "transform 5s cubic-bezier(0.15, 0, 0.1, 1)";
+            canvas.style.transform = `rotate(${randomRotation}deg)`;
 
-            // 2. Rövid szünet után pörgetés
             setTimeout(() => {
-                const randomExtra = Math.floor(Math.random() * 360);
-                const totalRotation = currentAngle + 3600 + randomExtra;
-                canvas.style.transform = `rotate(${totalRotation}deg)`;
-
-                setTimeout(() => {
-                    const finalDeg = totalRotation % 360;
-                    const sectionAngle = 360 / prizes.length;
-                    // Számítás a nyílhoz (pointer 0 fokon van)
-                    const correctedDeg = (360 - (finalDeg < 0 ? finalDeg + 360 : finalDeg)) % 360;
-                    const idx = Math.floor(correctedDeg / sectionAngle);
-                    const win = prizes[idx];
-                    
-                    // EGYEDI ABLAK MEGJELENÍTÉSE
-                    document.getElementById("prizeText").innerText = win;
-                    document.getElementById("customModal").style.display = "block";
-                    
-                    localStorage.setItem("spin_" + user.toLowerCase(), today);
-                    sendToForm(user, win);
-                }, 5100);
-            }, 50);
+                const finalDeg = randomRotation % 360;
+                const idx = Math.floor(((360 - finalDeg) / (360 / prizes.length))) % prizes.length;
+                const win = prizes[idx];
+                
+                document.getElementById("prizeText").innerText = win;
+                document.getElementById("customModal").style.display = "block";
+                
+                // Összefűzzük: Név + Nyeremény
+                const combinedData = user + " - " + win;
+                sendToForm(combinedData);
+            }, 5000);
         }
 
-        function sendToForm(user, prize) {
+        function sendToForm(data) {
             const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/formResponse";
             const form = document.createElement("form");
             form.target = "hidden_iframe"; form.method = "POST"; form.action = formURL;
             
-            const n = document.createElement("input"); n.type="hidden"; n.name="entry.1569039722"; n.value=user; form.appendChild(n);
-            const p = document.createElement("input"); p.type="hidden"; p.name="entry.916111113"; p.value=prize; form.appendChild(p);
+            // Csak az entry.1569039722-t küldjük (ebben lesz benne a név és a nyeremény is)
+            const input = document.createElement("input"); 
+            input.type = "hidden"; 
+            input.name = "entry.1569039722"; 
+            input.value = data; 
+            form.appendChild(input);
             
-            document.body.appendChild(form);
+            document.body.appendChild(form); 
             form.submit();
-            setTimeout(() => document.body.removeChild(form), 1000);
-        }
-
-        function closeModal() {
-            document.getElementById("customModal").style.display = "none";
-            document.getElementById("spinBtn").disabled = false;
-            // Visszatesszük az alapforgást a megállási pontról
-            canvas.classList.add("idle-animation");
         }
 
         window.onload = drawWheel;
