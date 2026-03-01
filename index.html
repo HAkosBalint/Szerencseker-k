@@ -231,18 +231,45 @@
             canvas.style.animation = "slow-spin 30s linear infinite";
         }
 
-        function sendToGoogleSheet(user, prize) {
+function sendToGoogleSheet(user, prize) {
+            // A Google Formod alap URL-je (beküldéshez)
             const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/formResponse";
-            const params = new URLSearchParams();
-            params.append("entry.1569039722", user); 
-            params.append("entry.916111113", prize); 
+            
+            // Létrehozunk egy láthatatlan űrlapot
+            const iframe = document.createElement("iframe");
+            iframe.style.display = "none";
+            document.body.appendChild(iframe);
 
-            fetch(formURL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: params.toString()
-            });
+            const form = document.createElement("form");
+            form.target = iframe.name;
+            form.method = "POST";
+            form.action = formURL;
+
+            // Név mező (ID: 1569039722)
+            const nameInput = document.createElement("input");
+            nameInput.type = "hidden";
+            nameInput.name = "entry.1569039722";
+            nameInput.value = user;
+            form.appendChild(nameInput);
+
+            // Nyeremény mező (ID: 916111113)
+            const prizeInput = document.createElement("input");
+            prizeInput.type = "hidden";
+            prizeInput.name = "entry.916111113";
+            prizeInput.value = prize;
+            form.appendChild(prizeInput);
+
+            // Beküldés
+            document.body.appendChild(form);
+            form.submit();
+
+            // Takarítás (pár másodperc múlva eltávolítjuk a segédelemeket)
+            setTimeout(() => {
+                document.body.removeChild(form);
+                document.body.removeChild(iframe);
+            }, 2000);
+            
+            console.log("Adatok elküldve: " + user + " - " + prize);
         }
 
         window.onload = function() {
