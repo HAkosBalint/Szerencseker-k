@@ -7,6 +7,7 @@
         body { 
             background: #1a0f0a; color: #f2e3c9; 
             font-family: 'Times New Roman', serif; text-align: center; padding: 20px;
+            overflow-x: hidden;
         }
 
         .main-container {
@@ -17,27 +18,16 @@
 
         .container { position: relative; display: inline-block; margin: 20px 0; }
         
-        /* ALAPFORGÁS - külön div-en, hogy ne zavarja a pörgetést */
         #wheel { 
             border: 12px solid #3e2723; border-radius: 50%; background: #4e342e;
-            display: block;
+            display: block; transition: transform 5s cubic-bezier(0.15, 0, 0.1, 1);
         }
 
-        /* Ez az osztály felel az alap lassú forgásért */
         .idle-animation {
             animation: slow-spin 30s linear infinite;
         }
 
-        @keyframes slow-spin { 
-            from { transform: rotate(0deg); } 
-            to { transform: rotate(360deg); } 
-        }
-
-        /* Pörgetéskor ezt használjuk */
-        .fast-spin {
-            animation: none !important;
-            transition: transform 5s cubic-bezier(0.15, 0, 0.1, 1) !important;
-        }
+        @keyframes slow-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         .pointer {
             position: absolute; top: 50%; right: -30px; transform: translateY(-50%);
@@ -51,19 +41,31 @@
             font-size: 24px; font-weight: bold; cursor: pointer; border-radius: 8px;
             text-shadow: 2px 2px 2px #000; margin-top: 20px;
         }
-        button:disabled { opacity: 0.6; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
 
         input { 
             padding: 12px; width: 280px; text-align: center; font-size: 18px; 
-            border: 2px solid #5d4037; border-radius: 5px;
+            border: 2px solid #5d4037; border-radius: 5px; background: rgba(255,255,255,0.7);
         }
+
+        /* EGYEDI FELUGRÓ ABLAK (MODAL) STÍLUSA */
+        #customModal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; background-color: rgba(0,0,0,0.8);
+        }
+        .modal-content {
+            background: #dcc296; margin: 15% auto; padding: 30px;
+            border: 5px solid #5d4037; width: 350px; border-radius: 15px;
+            box-shadow: 0 0 30px #000; text-align: center; color: #3e2723;
+        }
+        .modal-btn { margin-top: 20px; padding: 10px 30px; font-size: 18px; }
     </style>
 </head>
 <body>
 
     <div class="main-container">
         <h1>Szerencsekerék</h1>
-        <input type="text" id="username" placeholder="Discord neved..." autocomplete="off"><br>
+        <input type="text" id="username" placeholder="Hős neve..." autocomplete="off"><br>
         
         <div class="container">
             <div class="pointer"></div> 
@@ -71,6 +73,15 @@
         </div><br>
         
         <button id="spinBtn" onclick="spinWheel()">PÖRGETÉS!</button>
+    </div>
+
+    <div id="customModal">
+        <div class="modal-content">
+            <h2 style="margin-top:0;">Gratulálunk!</h2>
+            <p style="font-size: 1.2em;">A sorsod a következő:</p>
+            <p id="prizeText" style="font-size: 2em; font-weight: bold; color: #8b0000; margin: 10px 0;"></p>
+            <button class="modal-btn" onclick="closeModal()">RENDBEN</button>
+        </div>
     </div>
 
     <iframe name="hidden_iframe" style="display:none;"></iframe>
@@ -88,14 +99,14 @@
                 ctx.arc(225, 225, 225, i * arc, (i + 1) * arc); ctx.fill();
                 ctx.save(); ctx.fillStyle = "#fff"; ctx.font = "bold 17px serif";
                 ctx.textAlign = "right"; ctx.translate(225, 225);
-                ctx.rotate(i * arc + arc / 2); ctx.fillText(prizes[i], 215, 6);
+                ctx.rotate(i * arc + arc / 2); ctx.fillText(prizes[i], 210, 6);
                 ctx.restore();
             }
         }
 
         function spinWheel() {
             const user = document.getElementById("username").value.trim();
-            if (!user) return alert("Add meg a neved!");
+            if (!user) return alert("Hősöm, írd be a neved!");
 
             const today = new Date().toISOString().slice(0, 10);
             if (localStorage.getItem("spin_" + user.toLowerCase()) === today) {
@@ -105,7 +116,7 @@
             const btn = document.getElementById("spinBtn");
             btn.disabled = true;
 
-            // 1. MEGÁLLÍTJUK AZ ALAPFORGÁST OTT AHOL VAN
+            // 1. Alapforgás megállítása
             const style = window.getComputedStyle(canvas);
             const matrix = new WebKitCSSMatrix(style.transform);
             const currentAngle = Math.round(Math.atan2(matrix.b, matrix.a) * (180/Math.PI));
@@ -113,28 +124,26 @@
             canvas.classList.remove("idle-animation");
             canvas.style.transform = `rotate(${currentAngle}deg)`;
 
-            // 2. KIS SZÜNET UTÁN INDÍTJUK A PÖRGETÉST (hogy a böngésző észlelje a váltást)
+            // 2. Rövid szünet után pörgetés
             setTimeout(() => {
-                canvas.classList.add("fast-spin");
                 const randomExtra = Math.floor(Math.random() * 360);
                 const totalRotation = currentAngle + 3600 + randomExtra;
                 canvas.style.transform = `rotate(${totalRotation}deg)`;
 
                 setTimeout(() => {
-                    // 3. PONTOS KISZÁMÍTÁS (0 fok a pointer iránya)
                     const finalDeg = totalRotation % 360;
                     const sectionAngle = 360 / prizes.length;
-                    // Korrekció: a pointer 0 foknál van, a kerék rajzolása az óramutató járása szerint történik
+                    // Számítás a nyílhoz (pointer 0 fokon van)
                     const correctedDeg = (360 - (finalDeg < 0 ? finalDeg + 360 : finalDeg)) % 360;
                     const idx = Math.floor(correctedDeg / sectionAngle);
                     const win = prizes[idx];
                     
-                    alert("A nyereményed: " + win);
-                    localStorage.setItem("spin_" + user.toLowerCase(), today);
+                    // EGYEDI ABLAK MEGJELENÍTÉSE
+                    document.getElementById("prizeText").innerText = win;
+                    document.getElementById("customModal").style.display = "block";
                     
-                    // BEKÜLDÉS
+                    localStorage.setItem("spin_" + user.toLowerCase(), today);
                     sendToForm(user, win);
-                    btn.disabled = false;
                 }, 5100);
             }, 50);
         }
@@ -150,6 +159,13 @@
             document.body.appendChild(form);
             form.submit();
             setTimeout(() => document.body.removeChild(form), 1000);
+        }
+
+        function closeModal() {
+            document.getElementById("customModal").style.display = "none";
+            document.getElementById("spinBtn").disabled = false;
+            // Visszatesszük az alapforgást a megállási pontról
+            canvas.classList.add("idle-animation");
         }
 
         window.onload = drawWheel;
