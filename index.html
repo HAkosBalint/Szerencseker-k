@@ -4,25 +4,22 @@
     <meta charset="UTF-8">
     <title>Szerencsekerék</title>
     <style>
-        body { background: #1a0f0a; color: #f2e3c9; font-family: 'Times New Roman', serif; text-align: center; margin: 0; padding: 20px; }
+        body { background: #1a0f0a; color: #f2e3c9; font-family: 'Times New Roman', serif; text-align: center; padding: 20px; }
         .main-container { background: #dcc296; display: inline-block; padding: 30px; border-radius: 15px; border: 2px solid #5d4037; box-shadow: 0 0 40px #000; }
-        
         .container { position: relative; display: inline-block; margin: 20px 0; }
         
-        /* ALAPFORGÁS JAVÍTÁSA: A wrapper forog lassan */
-        #wheelWrapper {
-            display: inline-block;
-            animation: slow-spin 30s linear infinite;
-        }
-        .stop-animation { animation-play-state: paused !important; }
-
+        /* A kerék alaphelyzetben lassú forgással */
         #wheel { 
             border: 10px solid #3e2723; border-radius: 50%; background: #4e342e;
-            transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1);
             display: block;
         }
 
+        /* Alap lassú forgás CSS-szel */
+        .idle-spin { animation: slow-spin 30s linear infinite; }
         @keyframes slow-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* A pörgetés átmenete */
+        .spinning { transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1); }
 
         .pointer { 
             position: absolute; top: 50%; right: -25px; transform: translateY(-50%); 
@@ -47,9 +44,7 @@
         
         <div class="container">
             <div class="pointer"></div> 
-            <div id="wheelWrapper">
-                <canvas id="wheel" width="380" height="380"></canvas>
-            </div>
+            <canvas id="wheel" class="idle-spin" width="380" height="380"></canvas>
         </div><br>
         
         <button id="spinBtn" onclick="spinWheel()">PÖRGETÉS</button>
@@ -88,36 +83,46 @@
             if (!user) return alert("Hősöm, add meg a neved!");
 
             const btn = document.getElementById("spinBtn");
-            const wrapper = document.getElementById("wheelWrapper");
             btn.disabled = true;
 
-            // 1. Megállítjuk az alapforgást a wrapperen
-            wrapper.classList.add("stop-animation");
+            // 1. Kiszámoljuk hol áll éppen a kerék az animáció alatt
+            const style = window.getComputedStyle(canvas);
+            const matrix = new WebKitCSSMatrix(style.transform);
+            const currentRotation = Math.round(Math.atan2(matrix.b, matrix.a) * (180/Math.PI));
+            
+            // 2. Leállítjuk a CSS animációt és rögzítjük a jelenlegi szöget
+            canvas.classList.remove("idle-spin");
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
 
-            // 2. A keréknek adunk egy véletlenszerű nagy pörgetést
-            const extraDeg = 3600 + Math.floor(Math.random() * 360);
-            canvas.style.transform = `rotate(${extraDeg}deg)`;
-
+            // 3. Kényszerítjük a böngészőt a frissítésre, majd indítjuk a pörgetést
             setTimeout(() => {
-                // 3. Kiszámoljuk a nyereményt
-                const finalDeg = extraDeg % 360;
-                const idx = Math.floor(((360 - finalDeg) / (360 / prizes.length))) % prizes.length;
-                const win = prizes[idx];
-                
-                document.getElementById("prizeText").innerText = win;
-                document.getElementById("customModal").style.display = "block";
-                
-                // Adatküldés összefűzve
-                sendToForm(user + " - " + win);
-            }, 5000);
+                canvas.classList.add("spinning");
+                const extraSpin = 3600 + Math.floor(Math.random() * 360);
+                const finalRotation = currentRotation + extraSpin;
+                canvas.style.transform = `rotate(${finalRotation}deg)`;
+
+                setTimeout(() => {
+                    // 4. Pontos számítás: (A pointer 0 foknál van, a kerék jobbra forog)
+                    const actualStopAngle = finalRotation % 360;
+                    const normalizedAngle = (360 - (actualStopAngle < 0 ? actualStopAngle + 360 : actualStopAngle)) % 360;
+                    const idx = Math.floor(normalizedAngle / (360 / prizes.length));
+                    const win = prizes[idx];
+                    
+                    document.getElementById("prizeText").innerText = win;
+                    document.getElementById("customModal").style.display = "block";
+                    
+                    // Küldés összefűzve az entry.1569039722 mezőbe
+                    sendToForm(user + " - " + win);
+                }, 5000);
+            }, 50);
         }
 
-        function sendToForm(combinedData) {
+        function sendToForm(data) {
             const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/formResponse";
             const form = document.createElement("form");
             form.target = "hidden_iframe"; form.method = "POST"; form.action = formURL;
             const n = document.createElement("input"); 
-            n.name = "entry.1569039722"; n.value = combinedData; form.appendChild(n);
+            n.name = "entry.1569039722"; n.value = data; form.appendChild(n);
             document.body.appendChild(form); form.submit();
         }
 
