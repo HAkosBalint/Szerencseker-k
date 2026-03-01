@@ -9,7 +9,6 @@
             color: #f2e3c9; font-family: 'Times New Roman', serif; text-align: center; margin: 0; padding: 20px;
         }
 
-        /* Sima szélű pergamen */
         .main-container {
             background: #dcc296;
             display: inline-block;
@@ -26,13 +25,12 @@
         
         canvas { 
             border: 12px solid #3e2723; border-radius: 50%; background: #4e342e;
-            animation: slow-spin 40s linear infinite;
+            /* Alap lassú forgás */
+            transition: transform 0.5s ease-out;
         }
 
-        @keyframes slow-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        .spinning-active { 
-            animation: none !important; 
+        /* Amikor pörög, ezt az osztályt adjuk hozzá */
+        .spinning { 
             transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1) !important; 
         }
 
@@ -88,6 +86,7 @@
         const colors = ["#5d4037", "#8b5a2b", "#3e2723", "#d4af37", "#5d4037", "#8b0000", "#3e2723", "#a67b5b"];
         const canvas = document.getElementById("wheel");
         const ctx = canvas.getContext("2d");
+        let currentDeg = 0;
 
         function drawWheel() {
             const arc = (2 * Math.PI) / prizes.length;
@@ -112,39 +111,31 @@
             const user = document.getElementById("username").value.trim().toLowerCase();
             if (!user) return alert("Kérlek, add meg a Discord neved!");
 
-            // NAPI LIMIT ELLENŐRZÉSE
-            const today = new Date().toISOString().slice(0, 10); // Pl: "2026-03-01"
-            const lastSpin = localStorage.getItem("spin_" + user);
-
-            if (lastSpin === today) {
-                alert("Vitéz! Ezzel a névvel ma már pörgettél. Gyere vissza holnap!");
-                return;
+            // Napi limit ellenőrzése
+            const today = new Date().toISOString().slice(0, 10);
+            if (localStorage.getItem("spin_" + user) === today) {
+                return alert("Vitéz! Ezzel a névvel ma már pörgettél.");
             }
             
             const btn = document.getElementById("spinBtn");
             btn.disabled = true;
 
-            const style = window.getComputedStyle(canvas);
-            const matrix = new WebKitCSSMatrix(style.transform);
-            const currentAngle = Math.round(Math.atan2(matrix.b, matrix.a) * (180/Math.PI));
+            // Animáció indítása: sok fordulat + random végpont
+            canvas.classList.add("spinning");
+            const extraRotation = 3600 + Math.floor(Math.random() * 360);
+            currentDeg += extraRotation;
             
-            canvas.classList.add("spinning-active");
-            const extraRotation = Math.floor(Math.random() * 360) + 3600;
-            const totalRotation = extraRotation + (currentAngle < 0 ? currentAngle + 360 : currentAngle);
-            
-            canvas.style.transform = `rotate(${totalRotation}deg)`;
+            canvas.style.transform = `rotate(${currentDeg}deg)`;
 
             setTimeout(() => {
-                const actualDeg = totalRotation % 360;
+                const actualDeg = currentDeg % 360;
                 const idx = Math.floor(((360 - actualDeg) / (360 / prizes.length))) % prizes.length;
                 const win = prizes[idx];
                 
                 document.getElementById("modalPrizeText").innerText = win;
                 document.getElementById("prizeModal").style.display = "block";
                 
-                // Mentés a helyi tárolóba
                 localStorage.setItem("spin_" + user, today);
-                
                 sendToGoogleSheet(user, win);
             }, 5000);
         }
@@ -164,8 +155,9 @@
 
         function closeModal() {
             document.getElementById("prizeModal").style.display = "none";
-            canvas.classList.remove("spinning-active");
             document.getElementById("spinBtn").disabled = false;
+            // Levesszük a spinning osztályt, hogy a következő pörgetésnél újra érvényesüljön a transition
+            canvas.classList.remove("spinning");
         }
 
         window.onload = drawWheel;
