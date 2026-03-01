@@ -2,8 +2,9 @@
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
-    <title>Abul-Akbar Szerencsekereke - S&F Edition</title>
+    <title>Abul-Akbar Szerencsekereke</title>
     <style>
+        /* S&F Fantasy Világ Stílusa */
         body { 
             background: #1a0f0a url('https://www.transparenttextures.com/patterns/dark-wood.png'); 
             color: #f2e3c9; 
@@ -21,6 +22,7 @@
             box-shadow: 0 0 50px rgba(0,0,0,0.9);
             margin-top: 20px;
             color: #3e2723;
+            position: relative;
         }
 
         h1 { font-variant: small-caps; color: #5d4037; text-shadow: 1px 1px 0px #fff; margin-top: 0; }
@@ -28,11 +30,11 @@
         .container { position: relative; display: inline-block; margin: 20px 0; }
 
         canvas { 
-            border: 12px solid #3e2723; 
+            border: 15px solid #3e2723; 
             border-radius: 50%; 
-            box-shadow: 0 0 20px #000;
-            background: #5d4037;
-            animation: slow-spin 30s linear infinite;
+            box-shadow: 0 0 25px #000;
+            background: #4e342e;
+            animation: slow-spin 40s linear infinite;
         }
 
         @keyframes slow-spin {
@@ -45,31 +47,34 @@
             transition: transform 5s cubic-bezier(0.1, 0, 0.2, 1) !important;
         }
 
+        /* Patinás Mutató */
         .pointer {
-            position: absolute; top: 50%; right: -25px; transform: translateY(-50%);
+            position: absolute; top: 50%; right: -30px; transform: translateY(-50%);
             width: 0; height: 0; 
-            border-top: 20px solid transparent;
-            border-bottom: 20px solid transparent; 
-            border-right: 40px solid #d4af37; 
+            border-top: 25px solid transparent;
+            border-bottom: 25px solid transparent; 
+            border-right: 50px solid #d4af37; 
             z-index: 10;
+            filter: drop-shadow(3px 3px 3px rgba(0,0,0,0.7));
         }
 
+        /* S&F Gomb Stílus */
         button { 
             background: linear-gradient(to bottom, #8b5a2b 0%, #4e342e 100%);
             border: 3px solid #d4af37; 
             color: #f2e3c9; 
-            padding: 15px 40px; 
-            font-size: 22px; 
+            padding: 15px 45px; 
+            font-size: 24px; 
             font-weight: bold; 
             cursor: pointer; 
             border-radius: 5px; 
             text-shadow: 2px 2px 2px #000;
-            box-shadow: 0 4px 0 #2e1a12;
+            box-shadow: 0 5px 0 #2e1a12;
             transition: 0.1s;
         }
         button:hover { background: linear-gradient(to bottom, #a06a3a 0%, #5d4037 100%); }
-        button:active { transform: translateY(3px); box-shadow: 0 1px 0 #2e1a12; }
-        button:disabled { background: #555; border-color: #777; cursor: not-allowed; opacity: 0.6; }
+        button:active { transform: translateY(3px); box-shadow: 0 2px 0 #2e1a12; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
 
         input { 
             background: #fdf5e6; 
@@ -78,34 +83,35 @@
             font-size: 18px; 
             color: #3e2723;
             border-radius: 4px;
-            width: 280px;
+            width: 300px;
             margin-bottom: 15px;
-            outline: none;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
         }
 
+        /* Modal */
         #prizeModal {
             display: none; position: fixed; z-index: 200; left: 0; top: 0; 
-            width: 100%; height: 100%; background-color: rgba(0,0,0,0.8);
+            width: 100%; height: 100%; background-color: rgba(0,0,0,0.85);
         }
         .modal-content {
             background: #dcc296 url('https://www.transparenttextures.com/patterns/beige-paper.png');
             margin: 15% auto; padding: 40px; 
-            border: 6px solid #5d4037; width: 300px; border-radius: 10px; 
-            text-align: center; box-shadow: 0 0 50px #000;
+            border: 8px solid #5d4037; width: 320px; border-radius: 10px; 
+            text-align: center; box-shadow: 0 0 60px #000;
         }
     </style>
 </head>
 <body>
 
     <div class="main-container">
-        <h1>🎡 Szerencsekerék</h1>
+        <h1>🎡 Abul-Akbar Szerencsekereke</h1>
         <p>Vitéz, add meg a neved a hősök könyvébe!</p>
         
-        <input type="text" id="username" placeholder="Hős neve..."><br>
+        <input type="text" id="username" placeholder="Hős neve..." autocomplete="off"><br>
         
         <div class="container">
             <div class="pointer"></div> 
-            <canvas id="wheel" width="450" height="450"></canvas>
+            <canvas id="wheel" width="480" height="480"></canvas>
         </div>
 
         <br>
@@ -115,53 +121,83 @@
     <div id="prizeModal">
         <div class="modal-content">
             <h2 style="color:#5d4037">Gratulálok, vitéz!</h2>
-            <p id="modalPrizeText" style="font-size: 24px; font-weight: bold;"></p>
+            <p id="modalPrizeText" style="font-size: 28px; font-weight: bold; color: #8b0000;"></p>
             <button onclick="closeModal()">RENDBEN</button>
         </div>
     </div>
 
     <script>
+        // S&F ihletésű nyeremények és fahatású színek
         const prizes = ["🍄 5 Gomba", "💰 1000 Arany", "💀 Balszerencse", "🍄 10 Gomba", "🛡️ Új Rang", "🍻 Egy sör", "💎 Drágakő", "⚔️ Fegyver"];
-        const colors = ["#4e342e", "#8b0000", "#3e2723", "#d4af37", "#4e342e", "#8b0000", "#3e2723", "#d4af37"];
+        const colors = ["#5d4037", "#8b5a2b", "#3e2723", "#d4af37", "#5d4037", "#8b0000", "#3e2723", "#a67b5b"];
         
         const canvas = document.getElementById("wheel");
         const ctx = canvas.getContext("2d");
         let lastPrizeIndex = -1;
 
-        // BÖNGÉSZŐ ALAPÚ HANG GENERÁTOR
+        // Hangrendszer
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playClick() {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(500, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.05, audioCtx.currentTime); // Halk pittyenés
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.frequency.setValueAtTime(450, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
+            osc.stop(audioCtx.currentTime + 0.12);
         }
 
+        // Kerék rajzolása "törött" deszka hatással
         function drawWheel() {
             const arc = (2 * Math.PI) / prizes.length;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
             for (let i = 0; i < prizes.length; i++) {
-                ctx.beginPath(); ctx.fillStyle = colors[i];
-                ctx.moveTo(225, 225);
-                ctx.arc(225, 225, 225, i * arc, (i + 1) * arc);
+                ctx.beginPath();
+                ctx.fillStyle = colors[i];
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, 240, i * arc, (i + 1) * arc);
                 ctx.fill();
-                ctx.strokeStyle = "#f2e3c9"; ctx.lineWidth = 2; ctx.stroke();
+
+                // Egyenetlen "törött" osztóvonalak rajzolása
                 ctx.save();
-                ctx.fillStyle = "#fff"; ctx.font = "bold 16px serif";
-                ctx.textAlign = "right"; ctx.translate(225, 225);
+                ctx.strokeStyle = "#2e1a12";
+                ctx.lineWidth = 3;
+                ctx.translate(centerX, centerY);
+                ctx.rotate(i * arc);
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                
+                // Recés vonal generálása
+                for (let r = 20; r <= 240; r += 20) {
+                    let jitter = (Math.random() - 0.5) * 4;
+                    ctx.lineTo(r, jitter);
+                }
+                ctx.stroke();
+                ctx.restore();
+
+                // Szöveg
+                ctx.save();
+                ctx.fillStyle = "#fff";
+                ctx.font = "bold 18px 'Times New Roman', serif";
+                ctx.shadowColor = "black";
+                ctx.shadowBlur = 4;
+                ctx.textAlign = "right";
+                ctx.translate(centerX, centerY);
                 ctx.rotate(i * arc + arc / 2);
-                ctx.fillText(prizes[i], 210, 5); ctx.restore();
+                ctx.fillText(prizes[i], 220, 8);
+                ctx.restore();
             }
         }
 
-        // FOLYAMATOS FIGYELÉS (Alapforgáshoz és pörgéshez is)
+        // Forgás figyelése a hanghoz
         function checkRotation() {
             const style = window.getComputedStyle(canvas);
             const matrix = new WebKitCSSMatrix(style.transform);
@@ -170,25 +206,20 @@
             const prizeIndex = Math.floor(((360 - adjustedAngle) / (360 / prizes.length))) % prizes.length;
 
             if (prizeIndex !== lastPrizeIndex) {
-                // Csak akkor szólal meg, ha már aktiválva van a hangrendszer (kattintottál)
-                if (audioCtx.state === 'running') {
-                    playClick();
-                }
+                if (audioCtx.state === 'running') playClick();
                 lastPrizeIndex = prizeIndex;
             }
             requestAnimationFrame(checkRotation);
         }
 
-        // HANG FELÉBRESZTÉSE ELSŐ KATTINTÁSRA
-        document.body.addEventListener('click', function() {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+        // Hang aktiválása kattintásra
+        document.body.addEventListener('click', () => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
         }, { once: true });
 
         function spinWheel() {
             const user = document.getElementById("username").value.trim();
-            if (!user) return alert("Hősök könyvéhez név kell!");
+            if (!user) return alert("Hős, add meg a neved!");
             
             const spinBtn = document.getElementById("spinBtn");
             const style = window.getComputedStyle(canvas);
@@ -203,15 +234,12 @@
             setTimeout(() => {
                 canvas.classList.add("spinning");
                 const spinDeg = Math.floor(Math.random() * 360) + 3600; 
-                const finalRotation = currentAngle + spinDeg;
-                canvas.style.transform = `rotate(${finalRotation}deg)`;
+                const totalRotation = currentAngle + spinDeg;
+                canvas.style.transform = `rotate(${totalRotation}deg)`;
 
                 setTimeout(() => {
-                    const finalStyle = window.getComputedStyle(canvas);
-                    const finalMatrix = new WebKitCSSMatrix(finalStyle.transform);
-                    const finalAngle = Math.atan2(finalMatrix.b, finalMatrix.a) * (180 / Math.PI);
-                    const adjustedFinalAngle = (finalAngle < 0 ? finalAngle + 360 : finalAngle);
-                    const prizeIndex = Math.floor(((360 - (adjustedFinalAngle % 360)) / (360 / prizes.length))) % prizes.length;
+                    const finalRotation = totalRotation % 360;
+                    const prizeIndex = Math.floor(((360 - finalRotation) / (360 / prizes.length))) % prizes.length;
                     const winnerPrize = prizes[prizeIndex];
                     
                     document.getElementById("modalPrizeText").innerText = winnerPrize;
@@ -226,53 +254,46 @@
         function closeModal() {
             document.getElementById("prizeModal").style.display = "none";
             canvas.classList.remove("spinning");
-            canvas.style.transform = ""; 
+            canvas.style.transform = "rotate(0deg)"; 
             void canvas.offsetWidth;
-            canvas.style.animation = "slow-spin 30s linear infinite";
+            canvas.style.animation = "slow-spin 40s linear infinite";
         }
 
-function sendToGoogleSheet(user, prize) {
-    const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/formResponse";
-    
-    // Létrehozunk egy láthatatlan iframe-et a háttérben való beküldéshez
-    const iframe = document.createElement("iframe");
-    iframe.name = "hidden_iframe";
-    iframe.style.display = "none";
-    document.body.appendChild(iframe);
+        // ATOMBIZTOS GOOGLE BEKÜLDÉS
+        function sendToGoogleSheet(user, prize) {
+            const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/formResponse";
+            
+            const iframe = document.createElement("iframe");
+            iframe.name = "hidden_iframe";
+            iframe.style.display = "none";
+            document.body.appendChild(iframe);
 
-    // Létrehozzuk az űrlapot
-    const form = document.createElement("form");
-    form.target = "hidden_iframe";
-    form.method = "POST";
-    form.action = formURL;
+            const form = document.createElement("form");
+            form.target = "hidden_iframe";
+            form.method = "POST";
+            form.action = formURL;
 
-    // Név mező hozzáadása (ID a képed alapján: 1569039722)
-    const nameInput = document.createElement("input");
-    nameInput.type = "hidden";
-    nameInput.name = "entry.1569039722";
-    nameInput.value = user;
-    form.appendChild(nameInput);
+            // Név: 1569039722 | Nyeremény: 916111113
+            const nameField = document.createElement("input");
+            nameField.name = "entry.1569039722";
+            nameField.value = user;
+            form.appendChild(nameField);
 
-    // Nyeremény mező hozzáadása (ID a képed alapján: 916111113)
-    const prizeInput = document.createElement("input");
-    prizeInput.type = "hidden";
-    prizeInput.name = "entry.916111113";
-    prizeInput.value = prize;
-    form.appendChild(prizeInput);
+            const prizeField = document.createElement("input");
+            prizeField.name = "entry.916111113";
+            prizeField.value = prize;
+            form.appendChild(prizeField);
 
-    // Beküldés és takarítás
-    document.body.appendChild(form);
-    form.submit();
-    
-    setTimeout(() => {
-        document.body.removeChild(form);
-        document.body.removeChild(iframe);
-    }, 2000);
-    
-    console.log("Adatok elküldve a táblázatba: ", user, prize);
-}
+            document.body.appendChild(form);
+            form.submit();
+            
+            setTimeout(() => {
+                document.body.removeChild(form);
+                document.body.removeChild(iframe);
+            }, 2000);
+        }
 
-        window.onload = function() {
+        window.onload = () => {
             drawWheel();
             requestAnimationFrame(checkRotation);
         };
