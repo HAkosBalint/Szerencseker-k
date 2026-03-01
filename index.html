@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Abul-Akbar Szerencsekereke - S&F Edition</title>
     <style>
-        /* S&F Fantasy Stílus */
         body { 
             background: #1a0f0a url('https://www.transparenttextures.com/patterns/dark-wood.png'); 
             color: #f2e3c9; 
@@ -46,7 +45,6 @@
             transition: transform 5s cubic-bezier(0.1, 0, 0.2, 1) !important;
         }
 
-        /* Jelzőnyíl */
         .pointer {
             position: absolute; top: 50%; right: -25px; transform: translateY(-50%);
             width: 0; height: 0; 
@@ -54,10 +52,8 @@
             border-bottom: 20px solid transparent; 
             border-right: 40px solid #d4af37; 
             z-index: 10;
-            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5));
         }
 
-        /* S&F Gomb */
         button { 
             background: linear-gradient(to bottom, #8b5a2b 0%, #4e342e 100%);
             border: 3px solid #d4af37; 
@@ -87,7 +83,6 @@
             outline: none;
         }
 
-        /* Modal */
         #prizeModal {
             display: none; position: fixed; z-index: 200; left: 0; top: 0; 
             width: 100%; height: 100%; background-color: rgba(0,0,0,0.8);
@@ -133,16 +128,15 @@
         const ctx = canvas.getContext("2d");
         let lastPrizeIndex = -1;
 
-        // BÖNGÉSZŐ ALAPÚ HANG (Ha nincs fájlod, ez akkor is szól)
+        // BÖNGÉSZŐ ALAPÚ HANG GENERÁTOR
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playClick() {
-            // HA MAJD VAN GITHUB LINKED, EZT CSERÉLJÜK LE EGY AUDIO FÁJLRA
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sine';
             osc.frequency.setValueAtTime(500, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime); // Halk pittyenés
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
@@ -167,6 +161,7 @@
             }
         }
 
+        // FOLYAMATOS FIGYELÉS (Alapforgáshoz és pörgéshez is)
         function checkRotation() {
             const style = window.getComputedStyle(canvas);
             const matrix = new WebKitCSSMatrix(style.transform);
@@ -175,19 +170,26 @@
             const prizeIndex = Math.floor(((360 - adjustedAngle) / (360 / prizes.length))) % prizes.length;
 
             if (prizeIndex !== lastPrizeIndex) {
-                playClick();
+                // Csak akkor szólal meg, ha már aktiválva van a hangrendszer (kattintottál)
+                if (audioCtx.state === 'running') {
+                    playClick();
+                }
                 lastPrizeIndex = prizeIndex;
             }
-            if (canvas.classList.contains("spinning")) requestAnimationFrame(checkRotation);
+            requestAnimationFrame(checkRotation);
         }
+
+        // HANG FELÉBRESZTÉSE ELSŐ KATTINTÁSRA
+        document.body.addEventListener('click', function() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }, { once: true });
 
         function spinWheel() {
             const user = document.getElementById("username").value.trim();
             if (!user) return alert("Hősök könyvéhez név kell!");
             
-            // AudioContext engedélyezése kattintásra
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-
             const spinBtn = document.getElementById("spinBtn");
             const style = window.getComputedStyle(canvas);
             const matrix = new WebKitCSSMatrix(style.transform);
@@ -200,7 +202,6 @@
 
             setTimeout(() => {
                 canvas.classList.add("spinning");
-                requestAnimationFrame(checkRotation);
                 const spinDeg = Math.floor(Math.random() * 360) + 3600; 
                 const finalRotation = currentAngle + spinDeg;
                 canvas.style.transform = `rotate(${finalRotation}deg)`;
@@ -230,7 +231,6 @@
             canvas.style.animation = "slow-spin 30s linear infinite";
         }
 
-        // JAVÍTOTT GOOGLE BEKÜLDÉS
         function sendToGoogleSheet(user, prize) {
             const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSefkJTHSp1QD_5owpuv3MoQ9OrFa1kA4T5h-ykElffufGpWsA/formResponse";
             const params = new URLSearchParams();
@@ -245,7 +245,10 @@
             });
         }
 
-        window.onload = drawWheel;
+        window.onload = function() {
+            drawWheel();
+            requestAnimationFrame(checkRotation);
+        };
     </script>
 </body>
 </html>
