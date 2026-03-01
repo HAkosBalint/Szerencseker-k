@@ -7,33 +7,41 @@
         body { 
             background: #1a0f0a url('https://www.transparenttextures.com/patterns/dark-wood.png'); 
             color: #f2e3c9; font-family: 'Times New Roman', serif; text-align: center; margin: 0; padding: 20px;
+            overflow-x: hidden;
         }
 
-        /* Szakadt pergamen háttér az általad küldött kép alapján */
+        /* Stabil, szakadt szélű pergamen (nem kép alapú, így nem tűnik el) */
         .main-container {
-            background: url('https://i.imgur.com/8S9p38n.png') no-repeat center center; /* Itt az általad küldött pergamen képe */
-            background-size: 100% 100%;
+            background: #dcc296; 
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2) 0%, rgba(0,0,0,0) 100%),
+                url('https://www.transparenttextures.com/patterns/beige-paper.png');
             display: inline-block;
-            padding: 60px 80px;
+            padding: 70px 90px;
             position: relative;
-            min-width: 550px;
+            min-width: 520px;
             color: #3e2723;
-            filter: drop-shadow(0 0 30px rgba(0,0,0,0.8));
-        }
-
-        /* Ha a fenti link nem működne, ez a fallback megoldás a szakadt szélre */
-        .fallback-parchment {
-            background: #dcc296 url('https://www.transparenttextures.com/patterns/beige-paper.png');
-            clip-path: polygon(2% 2%, 97% 1%, 100% 5%, 98% 95%, 95% 99%, 4% 98%, 0% 94%, 1% 6%);
-            border: 2px solid #5d4037;
+            box-shadow: 0 0 40px rgba(0,0,0,0.9), inset 0 0 60px rgba(93, 64, 55, 0.4);
+            
+            /* Égetett, egyenetlen szél létrehozása clip-path-szel */
+            clip-path: polygon(
+                0% 8%, 4% 2%, 12% 5%, 22% 1%, 32% 4%, 45% 2%, 58% 5%, 72% 1%, 86% 4%, 100% 8%, 
+                97% 18%, 100% 32%, 96% 48%, 100% 64%, 97% 82%, 100% 94%, 
+                88% 97%, 74% 100%, 62% 96%, 48% 99%, 34% 96%, 20% 100%, 8% 97%, 0% 92%,
+                3% 80%, 0% 62%, 4% 48%, 0% 34%, 3% 18%
+            );
+            border: 1px solid #5d4037;
         }
 
         .container { position: relative; display: inline-block; margin: 20px 0; }
         
+        /* A szerencsekerék alapja */
         canvas { 
-            border: 12px solid #3e2723; border-radius: 50%; background: #4e342e;
+            border: 14px solid #3e2723; 
+            border-radius: 50%; 
+            background: #4e342e;
             animation: slow-spin 40s linear infinite;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            box-shadow: 0 0 25px rgba(0,0,0,0.7);
             display: block;
         }
 
@@ -42,46 +50,57 @@
             to { transform: rotate(360deg); } 
         }
 
-        /* Pörgetés alatti osztály - kikapcsolja az alap forgást */
+        /* Pörgetési állapot - megállítja az alapforgást és indítja a nagyot */
         .spinning-active { 
             animation: none !important; 
-            transition: transform 5s cubic-bezier(0.1, 0, 0.2, 1) !important; 
+            transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1) !important; 
         }
 
         .pointer {
-            position: absolute; top: 50%; right: -25px; transform: translateY(-50%);
-            width: 0; height: 0; border-top: 20px solid transparent; border-bottom: 20px solid transparent; 
-            border-right: 45px solid #d4af37; z-index: 10;
-            filter: drop-shadow(-2px 2px 2px rgba(0,0,0,0.5));
+            position: absolute; top: 50%; right: -30px; transform: translateY(-50%);
+            width: 0; height: 0; 
+            border-top: 25px solid transparent; 
+            border-bottom: 25px solid transparent; 
+            border-right: 55px solid #d4af37; 
+            z-index: 10;
+            filter: drop-shadow(-3px 3px 3px rgba(0,0,0,0.5));
         }
 
         button { 
-            background: linear-gradient(to bottom, #8b5a2b 0%, #4e342e 100%); border: 3px solid #d4af37; 
-            color: #f2e3c9; padding: 15px 45px; font-size: 24px; font-weight: bold; cursor: pointer; 
-            border-radius: 5px; text-shadow: 2px 2px 2px #000; box-shadow: 0 5px 0 #2e1a12;
-            margin-top: 10px;
+            background: linear-gradient(to bottom, #8b5a2b 0%, #4e342e 100%); 
+            border: 3px solid #d4af37; 
+            color: #f2e3c9; padding: 15px 45px; 
+            font-size: 24px; font-weight: bold; cursor: pointer; 
+            border-radius: 5px; text-shadow: 2px 2px 2px #000; 
+            box-shadow: 0 5px 0 #2e1a12;
+            margin-top: 15px;
+            transition: all 0.2s;
         }
         button:active { transform: translateY(3px); box-shadow: 0 2px 0 #2e1a12; }
-        button:disabled { filter: grayscale(1); cursor: not-allowed; }
+        button:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.7; }
 
         input { 
-            background: rgba(253, 245, 230, 0.8); border: 2px solid #5d4037; 
-            padding: 12px; font-size: 18px; width: 280px; margin-bottom: 10px;
+            background: rgba(253, 245, 230, 0.9); 
+            border: 2px solid #5d4037; 
+            padding: 12px; font-size: 18px; width: 300px; 
+            margin-bottom: 10px;
             font-family: 'Times New Roman', serif;
+            text-align: center;
         }
         
         #prizeModal { display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
         .modal-content { 
             background: #dcc296 url('https://www.transparenttextures.com/patterns/beige-paper.png'); 
-            margin: 15% auto; padding: 40px; border: 8px solid #5d4037; width: 320px; text-align: center;
-            border-radius: 10px; box-shadow: 0 0 50px #000;
+            margin: 15% auto; padding: 40px; border: 8px solid #5d4037; width: 320px; 
+            text-align: center; border-radius: 10px; box-shadow: 0 0 50px #000;
         }
     </style>
 </head>
 <body>
 
     <div class="main-container">
-        <h1 style="font-variant: small-caps; margin-top: 0;">🎡 Szerencsekerék</h1>
+        <h1 style="font-variant: small-caps; margin: 0 0 10px 0; font-size: 36px;">🎡 Szerencsekerék</h1>
+        <p style="margin: 0 0 15px 0; font-style: italic;">Vitéez, írd be neved a krónikába!</p>
         <input type="text" id="username" placeholder="Hős neve..." autocomplete="off"><br>
         
         <div class="container">
@@ -94,7 +113,7 @@
 
     <div id="prizeModal">
         <div class="modal-content">
-            <h2 style="color:#5d4037">Gratulálok, vitéz!</h2>
+            <h2 style="color:#5d4037">Dicsőség neked!</h2>
             <p id="modalPrizeText" style="font-size: 32px; font-weight: bold; color: #8b0000; margin: 20px 0;"></p>
             <button onclick="closeModal()">RENDBEN</button>
         </div>
@@ -102,7 +121,8 @@
 
     <script>
         const prizes = ["5 Gomba", "1000 Arany", "Balszerencse", "10 Gomba", "Új Rang", "Egy sör", "Drágakő", "Fegyver"];
-        const colors = ["#5d4037", "#8b5a2b", "#3e2723", "#d4af37", "#5d4037", "#8b0000", "#3e2723", "#a67b5b"];
+        // Sötétebb, fahatású SF színek
+        const colors = ["#5d4037", "#8b5a2b", "#3e2723", "#a67b5b", "#5d4037", "#6f4e37", "#3e2723", "#8b5a2b"];
         const canvas = document.getElementById("wheel");
         const ctx = canvas.getContext("2d");
 
@@ -118,24 +138,24 @@
                 ctx.arc(centerX, centerY, 240, i * arc, (i + 1) * arc);
                 ctx.fill();
 
-                // Törött deszka textúra
+                // Törött deszka hatás (vonalak a fa erezetének szimulálására)
                 ctx.save();
                 ctx.strokeStyle = "rgba(46, 26, 18, 0.5)";
                 ctx.lineWidth = 2;
                 ctx.translate(centerX, centerY);
                 ctx.rotate(i * arc);
                 ctx.beginPath();
-                for (let r = 40; r <= 230; r += 30) {
-                    ctx.moveTo(r, -5);
-                    ctx.lineTo(r + 5, 5);
+                for (let r = 30; r <= 210; r += 40) {
+                    ctx.moveTo(r, -10);
+                    ctx.lineTo(r + 10, 10);
                 }
                 ctx.stroke();
                 ctx.restore();
 
-                // Elválasztó vonalak
+                // Szeletek közötti mélyedés
                 ctx.save();
                 ctx.strokeStyle = "#2e1a12";
-                ctx.lineWidth = 4;
+                ctx.lineWidth = 5;
                 ctx.translate(centerX, centerY);
                 ctx.rotate(i * arc);
                 ctx.beginPath();
@@ -144,20 +164,20 @@
                 ctx.stroke();
                 ctx.restore();
 
-                // Szöveg
+                // Szöveg stílusa
                 ctx.save();
                 ctx.fillStyle = "#fff";
                 ctx.shadowBlur = 4;
                 ctx.shadowColor = "#000";
-                ctx.font = "bold 18px 'Times New Roman'";
+                ctx.font = "bold 18px serif";
                 ctx.textAlign = "right";
                 ctx.translate(centerX, centerY);
                 ctx.rotate(i * arc + arc / 2);
-                ctx.fillText(prizes[i], 225, 6);
+                ctx.fillText(prizes[i], 220, 8);
                 ctx.restore();
             }
 
-            // Díszes fém közép
+            // Díszes, fém közép tengely
             ctx.beginPath();
             ctx.fillStyle = "#3e2723";
             ctx.arc(centerX, centerY, 45, 0, 2 * Math.PI);
@@ -166,45 +186,44 @@
             ctx.lineWidth = 6;
             ctx.stroke();
 
-            // Arany szegecs
+            // Középső arany szegecs
             ctx.beginPath();
             ctx.fillStyle = "#d4af37";
-            ctx.arc(centerX, centerY, 18, 0, 2 * Math.PI);
+            ctx.arc(centerX, centerY, 15, 0, 2 * Math.PI);
             ctx.fill();
-            ctx.strokeStyle = "#8b5a2b";
-            ctx.lineWidth = 2;
-            ctx.stroke();
         }
 
         function spinWheel() {
             const user = document.getElementById("username").value.trim();
             if (!user) return alert("Hős, add meg a neved!");
             
-            const spinBtn = document.getElementById("spinBtn");
-            spinBtn.disabled = true;
+            const btn = document.getElementById("spinBtn");
+            btn.disabled = true;
 
-            // Logika a pörgetéshez
-            canvas.classList.add("spinning-active");
-            const extraDeg = Math.floor(Math.random() * 360) + 3600; 
-            
-            // Lekérjük a pillanatnyi szöget, hogy ne ugorjon a kerék
+            // Kiszámoljuk az aktuális szöget a folyamatos pörgetéshez
             const style = window.getComputedStyle(canvas);
             const matrix = new WebKitCSSMatrix(style.transform);
             const currentAngle = Math.round(Math.atan2(matrix.b, matrix.a) * (180/Math.PI));
             
-            const totalRotation = extraDeg + (currentAngle < 0 ? currentAngle + 360 : currentAngle);
-            canvas.style.transform = `rotate(${totalRotation}deg)`;
+            canvas.classList.add("spinning-active");
+            
+            // Random pörgés (legalább 10 kör)
+            const extraRotation = Math.floor(Math.random() * 360) + 3600;
+            const finalRotation = extraRotation + (currentAngle < 0 ? currentAngle + 360 : currentAngle);
+            
+            canvas.style.transform = `rotate(${finalRotation}deg)`;
 
             setTimeout(() => {
-                const finalDeg = totalRotation % 360;
-                const idx = Math.floor(((360 - finalDeg) / (360 / prizes.length))) % prizes.length;
+                const actualDeg = finalRotation % 360;
+                // Kiszámoljuk melyik szeletnél állt meg a mutatóhoz képest (jobb oldal)
+                const idx = Math.floor(((360 - actualDeg) / (360 / prizes.length))) % prizes.length;
                 const win = prizes[idx];
                 
                 document.getElementById("modalPrizeText").innerText = win;
                 document.getElementById("prizeModal").style.display = "block";
                 
                 sendToGoogleSheet(user, win);
-                spinBtn.disabled = false;
+                btn.disabled = false;
             }, 5000);
         }
 
@@ -217,21 +236,24 @@
             const form = document.createElement("form");
             form.target = "hidden_frame"; form.method = "POST"; form.action = formURL;
             
+            // Az ID-k a képernyőmentéseid alapján
             const n = document.createElement("input"); n.type="hidden"; n.name = "entry.1569039722"; n.value = user; form.appendChild(n);
             const p = document.createElement("input"); p.type="hidden"; p.name = "entry.916111113"; p.value = prize; form.appendChild(p);
             
             document.body.appendChild(form);
             form.submit();
-            setTimeout(() => { document.body.removeChild(form); document.body.removeChild(iframe); }, 2000);
+            
+            // Takarítás 3 másodperc után
+            setTimeout(() => { document.body.removeChild(form); document.body.removeChild(iframe); }, 3000);
         }
 
         function closeModal() {
             document.getElementById("prizeModal").style.display = "none";
-            // Fontos: nem nullázzuk a transformot, hanem hagyjuk ott, ahol megállt, 
-            // és levesszük az osztályt, hogy a slow-spin onnan folytassa
             canvas.classList.remove("spinning-active");
+            // Maradjon ott a kerék, ahol megállt, ne ugorjon vissza
         }
 
+        // Első rajzolás
         window.onload = drawWheel;
     </script>
 </body>
